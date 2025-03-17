@@ -41,7 +41,7 @@ fun LoginScreen(navController: NavController) {
             modifier = Modifier
                 .fillMaxWidth()
                 .height(220.dp) // Ajusta la altura para cubrir bien la parte superior
-                .background(Color(0xFF2D5C88)) // 🎨 Azul oscuro
+                .background(Color(0xFF4682B4)) // 🎨 Azul oscuro
         )
 
         // 🔳 Sección clara con esquinas redondeadas
@@ -79,7 +79,7 @@ fun LoginScreen(navController: NavController) {
                 onTogglePasswordVisibility = { passwordVisible = !passwordVisible }
             )
 
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(100.dp))
 
             // 🔵 Botón "Log In"
             Button(
@@ -88,9 +88,20 @@ fun LoginScreen(navController: NavController) {
                     .width(200.dp)
                     .height(45.dp),
                 shape = CircleShape,
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2D5C88))
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4682B4))
             ) {
                 Text(text = "Log In", fontSize = 16.sp)
+            }
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            // 🔹 Texto de "Forgot Password?"
+            TextButton(onClick = { navController.navigate(Screen.ForgotPassword.route) }) {
+                Text(
+                    text = "Forgot Password?",
+                    fontSize = 14.sp,
+                    color = Color.Black
+                )
             }
 
             Spacer(modifier = Modifier.height(10.dp))
@@ -126,13 +137,13 @@ fun LoginScreen(navController: NavController) {
                 Icon(
                     painter = painterResource(id = R.drawable.facebook),
                     contentDescription = "Facebook",
-                    modifier = Modifier.size(24.dp)
+                    modifier = Modifier.size(40.dp)
                 )
                 Spacer(modifier = Modifier.width(16.dp))
                 Icon(
                     painter = painterResource(id = R.drawable.google),
                     contentDescription = "Google",
-                    modifier = Modifier.size(24.dp)
+                    modifier = Modifier.size(40.dp)
                 )
             }
 
@@ -195,6 +206,7 @@ fun TextFieldWithLabel(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(vertical = 8.dp)
+                .height(55.dp),
         )
     }
 }
