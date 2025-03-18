@@ -8,6 +8,7 @@ import com.example.budgetbuddy.ui.screens.LaunchScreen
 import com.example.budgetbuddy.ui.screens.LoginScreen
 import com.example.budgetbuddy.ui.screens.SignUpScreen // 🔥 Agregamos SignUp
 import com.example.budgetbuddy.ui.screens.ForgotPasswordScreen // 🔥 Agregamos ForgotPassword
+import com.example.budgetbuddy.viewmodel.AuthViewModel
 
 sealed class Screen(val route: String) {
     object Launch : Screen("launch")
@@ -18,11 +19,12 @@ sealed class Screen(val route: String) {
 }
 
 @Composable
-fun AppNavigation(navController: NavHostController) {
-    NavHost(navController, startDestination = Screen.Launch.route) {
+fun AppNavigation(navController: NavHostController, authViewModel: AuthViewModel) {
+    NavHost(navController = navController, startDestination = Screen.Launch.route) {
         composable(Screen.Launch.route) { LaunchScreen(navController) }
-        composable(Screen.Login.route) { LoginScreen(navController) }
-        composable(Screen.SignUp.route) { SignUpScreen(navController) } // 🔥 Nueva pantalla SignUp
-        composable(Screen.ForgotPassword.route) { ForgotPasswordScreen(navController) } // 🔥 Nueva pantalla ForgotPassword
+        composable(Screen.Login.route) { LoginScreen(navController, authViewModel) } // ✅ Pasamos authViewModel
+        composable(Screen.SignUp.route) { SignUpScreen(navController) }
+        composable(Screen.ForgotPassword.route) { ForgotPasswordScreen(navController) }
     }
 }
+

@@ -25,49 +25,48 @@ import com.example.budgetbuddy.navigation.Screen
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.OutlinedTextField
+import com.example.budgetbuddy.viewmodel.AuthState
+import com.example.budgetbuddy.viewmodel.AuthViewModel
 
 @Composable
-fun LoginScreen(navController: NavController) {
+fun LoginScreen(navController: NavController, authViewModel: AuthViewModel) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
 
-    Box(
-        modifier = Modifier.fillMaxSize()
+    val authState by authViewModel.authState.collectAsState() // Observar cambios
 
-    ) {
+    Box(modifier = Modifier.fillMaxSize()) {
         // 🔵 Fondo azul oscuro en la parte superior
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(220.dp) // Ajusta la altura para cubrir bien la parte superior
-                .background(Color(0xFF4682B4)) // 🎨 Azul oscuro
+                .height(220.dp)
+                .background(Color(0xFF4682B4))
         )
 
         // 🔳 Sección clara con esquinas redondeadas
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(top = 175.dp) // 🔥 Desplaza la caja hacia abajo para superponerla
+                .padding(top = 175.dp)
                 .background(
                     color = Color(0xFFD2E2F2),
-                    shape = RoundedCornerShape(topStart = 50.dp, topEnd = 50.dp) // 🔥 Bordes redondeados
+                    shape = RoundedCornerShape(topStart = 50.dp, topEnd = 50.dp)
                 )
                 .padding(horizontal = 16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // 🏷️ Título "Welcome" dentro del fondo azul oscuro
+            // 🏷️ Título "Welcome"
             Text(
                 text = "Welcome",
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.White,
-                modifier = Modifier
-                    .offset(y = -100.dp), // 🔥 Lo mueve hacia arriba para que quede en el azul oscuro
+                modifier = Modifier.offset(y = -100.dp),
                 textAlign = TextAlign.Center
             )
 
-            // 📝 Campos de Usuario y Contraseña
             Spacer(modifier = Modifier.height(10.dp))
             TextFieldWithLabel(label = "Username Or Email", value = email, onValueChange = { email = it })
             TextFieldWithLabel(
@@ -79,11 +78,11 @@ fun LoginScreen(navController: NavController) {
                 onTogglePasswordVisibility = { passwordVisible = !passwordVisible }
             )
 
-            Spacer(modifier = Modifier.height(100.dp))
+            Spacer(modifier = Modifier.height(30.dp))
 
             // 🔵 Botón "Log In"
             Button(
-                onClick = { navController.navigate(Screen.Home.route) },
+                onClick = { authViewModel.login(email, password) },
                 modifier = Modifier
                     .width(200.dp)
                     .height(45.dp),
@@ -93,20 +92,27 @@ fun LoginScreen(navController: NavController) {
                 Text(text = "Log In", fontSize = 16.sp)
             }
 
-            Spacer(modifier = Modifier.height(10.dp))
-
-            // 🔹 Texto de "Forgot Password?"
-            TextButton(onClick = { navController.navigate(Screen.ForgotPassword.route) }) {
-                Text(
-                    text = "Forgot Password?",
-                    fontSize = 14.sp,
-                    color = Color.Black
-                )
+            // 🔄 Mostrar Loading, Éxito o Error
+            when (authState) {
+                is AuthState.Loading -> CircularProgressIndicator(color = Color.Blue)
+                is AuthState.Success -> {
+                    LaunchedEffect(Unit) {
+                        navController.navigate(Screen.Launch.route)  // ✅ Navegar al Home si login es exitoso
+                    }
+                }
+                is AuthState.Error -> {
+                    val errorMessage = (authState as? AuthState.Error)?.message ?: "Unknown error"
+                    Text(text = "Login failed: $errorMessage", color = Color.Red, fontWeight = FontWeight.Bold)
+                }
+                else -> {} // No hacer nada en estado inicial
             }
 
             Spacer(modifier = Modifier.height(10.dp))
+            TextButton(onClick = { navController.navigate(Screen.ForgotPassword.route) }) {
+                Text(text = "Forgot Password?", fontSize = 14.sp, color = Color.Black)
+            }
 
-            // 🔹 Botón "Sign Up"
+            Spacer(modifier = Modifier.height(10.dp))
             Button(
                 onClick = { navController.navigate(Screen.SignUp.route) },
                 modifier = Modifier
