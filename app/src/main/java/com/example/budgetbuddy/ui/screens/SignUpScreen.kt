@@ -22,10 +22,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.budgetbuddy.R
+import com.example.budgetbuddy.model.UserRequest
 import com.example.budgetbuddy.navigation.Screen
+import com.example.budgetbuddy.viewmodel.AuthViewModel
+import com.example.budgetbuddy.viewmodel.AuthState
+
+
 
 @Composable
-fun SignUpScreen(navController: NavController) {
+fun SignUpScreen(navController: NavController , authViewModel: AuthViewModel) {
     var fullName by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var mobileNumber by remember { mutableStateOf("") }
@@ -34,6 +39,8 @@ fun SignUpScreen(navController: NavController) {
     var confirmPassword by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
     var confirmPasswordVisible by remember { mutableStateOf(false) }
+    val authState by authViewModel.authState.collectAsState() // Observar cambios
+
 
     Box(
         modifier = Modifier.fillMaxSize()
@@ -77,7 +84,9 @@ fun SignUpScreen(navController: NavController) {
             CustomTextField(label = "Full Name", value = fullName, onValueChange = { fullName = it })
             CustomTextField(label = "Email", value = email, onValueChange = { email = it })
             CustomTextField(label = "Mobile Number", value = mobileNumber, onValueChange = { mobileNumber = it })
-            CustomTextField(label = "Date Of Birth", value = dateOfBirth, onValueChange = { dateOfBirth = it })
+            FechaTextField(label = "Date Of Birth", value = dateOfBirth, onValueChange = { dateOfBirth = it })
+
+
 
             PasswordTextField(
                 label = "Password",
@@ -109,7 +118,8 @@ fun SignUpScreen(navController: NavController) {
 
             // 🔹 Botón "Sign Up"
             Button(
-                onClick = { /* Acción de registro */ },
+                onClick = { val user = UserRequest(fullName, email, password, dateOfBirth, mobileNumber)
+                    authViewModel.signup(user) },
                 modifier = Modifier
                     .width(200.dp)
                     .height(45.dp),
@@ -118,6 +128,16 @@ fun SignUpScreen(navController: NavController) {
             ) {
                 Text(text = "Sign Up", fontSize = 16.sp, color = Color.White)
             }
+            when (authState) {
+                is AuthState.Loading -> CircularProgressIndicator()
+                is AuthState.Success -> {
+                    Text("Sign Up Successful!", color = MaterialTheme.colorScheme.primary)
+                    navController.navigate("home")
+                }
+                is AuthState.Error -> Text("Error: ${(authState as AuthState.Error).message}", color = MaterialTheme.colorScheme.error)
+                else -> {}
+            }
+        }
 
             Spacer(modifier = Modifier.height(10.dp))
 
@@ -137,7 +157,7 @@ fun SignUpScreen(navController: NavController) {
             }
         }
     }
-}
+
 
 // 🔹 Función reutilizable para TextFields normales
 @Composable
@@ -166,7 +186,32 @@ fun CustomTextField(label: String, value: String, onValueChange: (String) -> Uni
             )
     }
 }
+@Composable
+fun FechaTextField(label: String, value: String, onValueChange: (String) -> Unit) {
+    Column(modifier = Modifier.padding(horizontal = 20.dp)) {
+        Text(text = label, fontSize = 14.sp, color = Color.Black, fontWeight = FontWeight.Medium)
+        OutlinedTextField(
+            value = value,
+            onValueChange = onValueChange,
+            placeholder = { Text("YYYY-MM-DD", color = Color.Gray) },
+            shape = RoundedCornerShape(25.dp),
+            colors = TextFieldDefaults.colors(
+                focusedTextColor = Color.Black,
+                unfocusedTextColor = Color.Black,
+                focusedContainerColor = Color.White,
+                unfocusedContainerColor = Color.White,
+                focusedIndicatorColor = Color.Gray,
+                unfocusedIndicatorColor = Color.LightGray,
+                cursorColor = Color.Black
+            ),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 6.dp)
+                .height(55.dp),
 
+            )
+    }
+}
 // 🔹 Función para campos de contraseña
 @Composable
 fun PasswordTextField(

@@ -23,7 +23,7 @@ fun AppNavigation(navController: NavHostController, authViewModel: AuthViewModel
     NavHost(navController = navController, startDestination = Screen.Launch.route) {
         composable(Screen.Launch.route) { LaunchScreen(navController) }
         composable(Screen.Login.route) { LoginScreen(navController, authViewModel) } // ✅ Pasamos authViewModel
-        composable(Screen.SignUp.route) { SignUpScreen(navController) }
+        composable(Screen.SignUp.route) { SignUpScreen(navController,authViewModel ) }
         composable(Screen.ForgotPassword.route) { ForgotPasswordScreen(navController) }
     }
 }

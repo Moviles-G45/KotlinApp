@@ -2,6 +2,8 @@ package com.example.budgetbuddy.services  // Ahora está en services
 
 import com.example.budgetbuddy.model.AuthResponse
 import com.example.budgetbuddy.model.User
+import com.example.budgetbuddy.model.UserRequest
+import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.Header
@@ -12,7 +14,7 @@ interface AuthService {
     suspend fun login(@Body user: User): AuthResponse
 
     @POST("/auth/signup")
-    suspend fun signup(@Body user: User): AuthResponse
+    suspend fun signup(@Body user: UserRequest): Response<AuthResponse>
 
     @POST("/auth/recover")
     suspend fun recoverPassword(@Body email: Map<String, String>): AuthResponse
