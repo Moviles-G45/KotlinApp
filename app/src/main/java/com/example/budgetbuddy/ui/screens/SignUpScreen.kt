@@ -132,7 +132,9 @@ fun SignUpScreen(navController: NavController , authViewModel: AuthViewModel) {
                 is AuthState.Loading -> CircularProgressIndicator()
                 is AuthState.Success -> {
                     Text("Sign Up Successful!", color = MaterialTheme.colorScheme.primary)
-                    navController.navigate("home")
+                    navController.navigate(Screen.Home.route) {  // 🔥 Ir a Home en lugar de Login
+                        popUpTo(Screen.SignUp.route) { inclusive = true } // 🔄 Evita regresar al SignUp
+                    }
                 }
                 is AuthState.Error -> Text("Error: ${(authState as AuthState.Error).message}", color = MaterialTheme.colorScheme.error)
                 else -> {}

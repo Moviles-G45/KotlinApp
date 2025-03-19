@@ -96,9 +96,11 @@ fun LoginScreen(navController: NavController, authViewModel: AuthViewModel) {
             when (authState) {
                 is AuthState.Loading -> CircularProgressIndicator(color = Color.Blue)
                 is AuthState.Success -> {
+                    Text("Login exitoso!", color = MaterialTheme.colorScheme.primary)
                     LaunchedEffect(Unit) {
-                        navController.navigate(Screen.Launch.route)  // ✅ Navegar al Home si login es exitoso
-                    }
+                        navController.navigate(Screen.Home.route) {  // 🔥 Ir a Home en lugar de Login
+                            popUpTo(Screen.SignUp.route) { inclusive = true } // 🔄 Evita regresar al SignUp
+                        }                    }
                 }
                 is AuthState.Error -> {
                     val errorMessage = (authState as? AuthState.Error)?.message ?: "Unknown error"

@@ -4,6 +4,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
+import com.example.budgetbuddy.services.AuthService
 
 object ApiClient {
     private const val BASE_URL = "http://192.168.0.5:8000/"
@@ -24,6 +25,10 @@ object ApiClient {
 
     fun <T> createService(serviceClass: Class<T>): T {
         return retrofit.create(serviceClass)
+    }
+    // 🔹 Método para obtener el servicio de autenticación
+    fun createAuthService(): AuthService {
+        return createService(AuthService::class.java)
     }
 
 

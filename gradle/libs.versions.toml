@@ -13,6 +13,8 @@ uiTextGoogleFonts = "1.7.6"
 materialIcons = "1.5.4"
 retrofit = "2.9.0"
 okhttp = "4.9.3"
+firebase-auth = "22.1.2" # Asegúrate de usar la última versión estable
+firebase-bom = "32.7.2"
 lifecycleViewModel = "2.6.1"
 
 
@@ -39,6 +41,8 @@ androidx-material-icons-extended = { group = "androidx.compose.material", name =
 retrofit = { group = "com.squareup.retrofit2", name = "retrofit", version.ref = "retrofit" }
 retrofit-gson = { group = "com.squareup.retrofit2", name = "converter-gson", version.ref = "retrofit" }
 okhttp-logging = { group = "com.squareup.okhttp3", name = "logging-interceptor", version.ref = "okhttp" }
+firebase-auth-ktx = { module = "com.google.firebase:firebase-auth-ktx", version.ref = "firebase-auth" }
+firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebase-bom" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
