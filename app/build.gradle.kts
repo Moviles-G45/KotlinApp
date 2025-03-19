@@ -56,6 +56,7 @@ dependencies {
     implementation(platform(libs.firebase.bom))
     implementation(platform("com.google.firebase:firebase-bom:33.10.0"))
     implementation("com.google.firebase:firebase-analytics")
+    implementation("androidx.security:security-crypto:1.1.0-alpha03")
 
     // Dependencias para conectar con mi bonito back.
     implementation(libs.retrofit)
