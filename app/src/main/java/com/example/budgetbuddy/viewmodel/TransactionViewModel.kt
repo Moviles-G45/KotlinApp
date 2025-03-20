@@ -25,10 +25,18 @@ class TransactionViewModel : ViewModel() {
     private val _totalIncome = mutableStateOf(0.0)
     val totalIncome: State<Double> get() = _totalIncome
 
-    fun fetchTransactions(token: String) {
+    fun fetchTransactions(
+        token: String,
+        startDate: String? = null,
+        endDate: String? = null
+    ) {
         viewModelScope.launch {
             try {
-                val result = repository.getTransactions(token)
+                val result = repository.getTransactions(
+                    authToken = token,
+                    startDate = startDate,
+                    endDate = endDate
+                )
                 _transactions.value = result
 
                 val calendar = Calendar.getInstance()
@@ -38,8 +46,6 @@ class TransactionViewModel : ViewModel() {
                 _totalBalance.value = balance.balance
                 _totalIncome.value = balance.total_earnings
                 _totalExpense.value = balance.total_expenses
-
-
             } catch (e: Exception) {
                 e.printStackTrace()
             }

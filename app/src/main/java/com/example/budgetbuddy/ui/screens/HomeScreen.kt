@@ -19,6 +19,8 @@ import androidx.navigation.NavController
 import com.example.budgetbuddy.R
 import com.example.budgetbuddy.navigation.Screen
 import com.example.budgetbuddy.ui.components.BottomNavBar
+import com.example.budgetbuddy.ui.components.FilterPanel
+import com.example.budgetbuddy.ui.components.FilterType
 import com.example.budgetbuddy.ui.theme.DarkGreen
 import com.example.budgetbuddy.ui.theme.DarkTeal
 import com.example.budgetbuddy.ui.theme.LightGreenishWhite
@@ -37,20 +39,62 @@ fun HomeScreen(
 ) {
     val userToken = authViewModel.getPersistedToken()
 
-    LaunchedEffect(userToken) {
+    // Controlamos el estado del filtro seleccionado
+    var selectedFilter by remember { mutableStateOf(FilterType.MONTHLY) }
+
+    // Función para actualizar las transacciones según el filtro
+    fun updateTransactions(filter: FilterType) {
+        selectedFilter = filter
         userToken?.let { token ->
-            transactionViewModel.fetchTransactions(token)
+            val now = Calendar.getInstance()
+            when (filter) {
+                FilterType.DAILY -> {
+                    // Hoy a mañana
+                    val startDate = formatDate(now)
+                    now.add(Calendar.DAY_OF_YEAR, 1)
+                    val endDate = formatDate(now)
+                    transactionViewModel.fetchTransactions(token, startDate, endDate)
+                }
+                FilterType.WEEKLY -> {
+                    // Ajustamos al inicio de semana (lunes) hasta 7 días después
+                    val dayOfWeek = now.get(Calendar.DAY_OF_WEEK) // 1=Dom, 2=Lun, ...
+                    val offset = if (dayOfWeek == Calendar.SUNDAY) 6 else dayOfWeek - 2
+                    now.add(Calendar.DAY_OF_YEAR, -offset)
+                    val startDate = formatDate(now)
+                    now.add(Calendar.DAY_OF_YEAR, 7)
+                    val endDate = formatDate(now)
+                    transactionViewModel.fetchTransactions(token, startDate, endDate)
+                }
+                FilterType.MONTHLY -> {
+                    // Inicio de mes hasta inicio de mes siguiente
+                    val currentMonth = now.get(Calendar.MONTH)
+                    val currentYear = now.get(Calendar.YEAR)
+                    now.set(Calendar.DAY_OF_MONTH, 1)
+                    val startDate = formatDate(now)
+                    now.set(Calendar.MONTH, currentMonth + 1)
+                    val endDate = formatDate(now)
+                    transactionViewModel.fetchTransactions(token, startDate, endDate)
+                }
+            }
         }
     }
 
+    // Al entrar a la pantalla, por defecto cargamos Monthly
+    LaunchedEffect(userToken) {
+        userToken?.let {
+            updateTransactions(FilterType.MONTHLY)
+        }
+    }
+
+    // Observamos los estados del ViewModel
     val transactions by transactionViewModel.transactions
     val totalExpense by transactionViewModel.totalExpense
     val totalBalance by transactionViewModel.totalBalance
     val totalIncome by transactionViewModel.totalIncome
 
+    // Cálculo de greeting
     val greeting = remember {
-        val calendar = Calendar.getInstance()
-        val hour = calendar.get(Calendar.HOUR_OF_DAY)
+        val hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
         when {
             hour < 12 -> "Good morning"
             hour < 18 -> "Good afternoon"
@@ -63,6 +107,7 @@ fun HomeScreen(
             .fillMaxSize()
             .background(PrimaryBlue)
     ) {
+        // ===== Box SUPERIOR (FONDO AZUL) =====
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -114,17 +159,17 @@ fun HomeScreen(
                     }
                 }
 
-                // === AÑADIMOS AQUÍ LA BARRA DE PROGRESO ===
                 Spacer(modifier = Modifier.height(8.dp))
+
+                // Barra de progreso (arriba)
                 IncomeExpenseProgressBar(
                     totalIncome = totalIncome,
                     totalExpense = totalExpense
                 )
-                // =========================================
             }
         }
 
-        // Resto de la pantalla
+        // ===== Box INFERIOR (FONDO VERDE) =====
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -137,6 +182,20 @@ fun HomeScreen(
                 modifier = Modifier.fillMaxSize()
             ) {
                 Spacer(Modifier.height(16.dp))
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp)
+                ) {
+                    FilterPanel(
+                        selectedFilter = selectedFilter,
+                        onFilterSelected = { filter -> updateTransactions(filter) }
+                    )
+                }
+
+                Spacer(Modifier.height(16.dp))
+
                 LazyColumn(
                     modifier = Modifier.weight(1f),
                     contentPadding = PaddingValues(horizontal = 16.dp),
@@ -211,6 +270,7 @@ fun HomeScreen(
 
                 Spacer(Modifier.height(16.dp))
 
+                // Barra de navegación inferior
                 BottomNavBar(
                     onHomeClick = { navController.navigate(Screen.Home.route) },
                     onAddExpenseClick = { navController.navigate(Screen.AddExpense.route) },
@@ -225,3 +285,12 @@ fun HomeScreen(
         }
     }
 }
+
+// Utilidad para formatear la fecha del Calendar a "yyyy-MM-dd"
+fun formatDate(calendar: Calendar): String {
+    val year = calendar.get(Calendar.YEAR)
+    val month = calendar.get(Calendar.MONTH) + 1
+    val day = calendar.get(Calendar.DAY_OF_MONTH)
+    return "%04d-%02d-%02d".format(year, month, day)
+}
+

@@ -6,11 +6,14 @@ import com.example.budgetbuddy.model.Transaction
 import retrofit2.http.Header
 import retrofit2.http.GET
 import retrofit2.http.Path
+import retrofit2.http.Query
 
 interface TransactionService {
     @GET("transactions")
     suspend fun getTransactions(
-        @Header("Authorization") authToken: String
+        @Header("Authorization") authToken: String,
+        @Query("startDate") startDate: String? = null,
+        @Query("endDate") endDate: String? = null
     ): List<Transaction>
 
     @GET("transactions/total_spent")
