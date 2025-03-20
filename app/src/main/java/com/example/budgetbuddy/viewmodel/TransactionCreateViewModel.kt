@@ -9,9 +9,9 @@ import com.example.budgetbuddy.model.TransactionRequest
 import com.example.budgetbuddy.model.ExpensesCreateRequestResponse
 import com.example.budgetbuddy.repository.ExpensesRepository
 
-class TransactionCreateViewModel(
-    private val repository: ExpensesRepository
-) : ViewModel() {
+class TransactionCreateViewModel() : ViewModel() {
+
+    private val repository = ExpensesRepository()
 
     private val _transactionResult = MutableStateFlow<Result<ExpensesCreateRequestResponse>?>(null)
     val transactionResult: StateFlow<Result<ExpensesCreateRequestResponse>?> = _transactionResult

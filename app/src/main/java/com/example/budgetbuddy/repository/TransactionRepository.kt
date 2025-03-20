@@ -11,4 +11,8 @@ class TransactionRepository {
     suspend fun getTransactions(authToken: String): List<Transaction> {
         return transactionService.getTransactions("Bearer $authToken")
     }
+
+    suspend fun getTotalSpent(authToken: String): Double {
+        return transactionService.getTotalSpent("Bearer $authToken").total_spent
+    }
 }

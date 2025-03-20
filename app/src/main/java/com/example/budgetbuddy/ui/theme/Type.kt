@@ -8,7 +8,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import com.example.budgetbuddy.R
 
-
 val Poppins = FontFamily(
     Font(R.font.poppins_light, FontWeight.Light),
     Font(R.font.poppins_regular, FontWeight.Normal),
@@ -16,17 +15,26 @@ val Poppins = FontFamily(
     Font(R.font.poppins_semibold, FontWeight.SemiBold)
 )
 
-
 val Typography = Typography(
     headlineLarge = TextStyle(
         fontFamily = Poppins,
         fontWeight = FontWeight.SemiBold,
         fontSize = 20.sp
     ),
+    headlineMedium = TextStyle(
+        fontFamily = Poppins,
+        fontWeight = FontWeight.Bold,
+        fontSize = 24.sp
+    ),
     bodyLarge = TextStyle(
         fontFamily = Poppins,
         fontWeight = FontWeight.Normal,
         fontSize = 14.sp
+    ),
+    bodySmall = TextStyle(
+        fontFamily = Poppins,
+        fontWeight = FontWeight.Normal,
+        fontSize = 12.sp
     ),
     titleMedium = TextStyle(
         fontFamily = Poppins,

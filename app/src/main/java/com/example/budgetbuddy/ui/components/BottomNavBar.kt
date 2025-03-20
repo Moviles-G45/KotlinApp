@@ -10,16 +10,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import com.example.budgetbuddy.R
 import com.example.budgetbuddy.ui.theme.LightBlueAccent
 import com.example.budgetbuddy.ui.theme.PrimaryBlue
-import com.example.budgetbuddy.R
-
 
 @Composable
 fun BottomNavBar(
     onHomeClick: () -> Unit,
+    onAddExpenseClick: () -> Unit,
     onProfileClick: () -> Unit,
-    // Este flag indica si el botón de Home está seleccionado
     isHomeSelected: Boolean = true
 ) {
     Box(
@@ -37,7 +36,7 @@ fun BottomNavBar(
             horizontalArrangement = Arrangement.SpaceEvenly,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Botón de Home con icono custom y resaltado si está seleccionado
+            // Botón de Home
             IconButton(onClick = onHomeClick) {
                 if (isHomeSelected) {
                     Box(
@@ -61,7 +60,15 @@ fun BottomNavBar(
                 }
             }
 
-            // Botón de Perfil (en este caso, cierra sesión) con icono custom
+            // Botón para agregar expense (icono de +)
+            IconButton(onClick = onAddExpenseClick) {
+                Icon(
+                    painter = painterResource(id = R.drawable.add_expense),
+                    contentDescription = "Add Expense Icon"
+                )
+            }
+
+            // Botón de Profile (cerrar sesión o perfil)
             IconButton(onClick = onProfileClick) {
                 Icon(
                     painter = painterResource(id = R.drawable.profile),

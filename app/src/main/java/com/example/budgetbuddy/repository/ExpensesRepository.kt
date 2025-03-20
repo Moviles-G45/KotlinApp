@@ -8,7 +8,9 @@ import com.example.budgetbuddy.services.CreateExpensesService
 import retrofit2.HttpException
 import java.io.IOException
 
-class ExpensesRepository(private val expensesService: CreateExpensesService) {
+class ExpensesRepository() {
+
+    private val expensesService: CreateExpensesService = ApiClient.createService(CreateExpensesService::class.java)
 
     suspend fun addTransaction(transaction: TransactionRequest, token: String): Result<ExpensesCreateRequestResponse> {
         return try {

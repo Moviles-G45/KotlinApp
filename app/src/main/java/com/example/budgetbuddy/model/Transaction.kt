@@ -16,3 +16,7 @@ data class Category(
 data class CategoryType(
     val id: Int
 )
+
+data class TotalSpent(
+    val total_spent: Double
+)
