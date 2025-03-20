@@ -6,7 +6,8 @@ import com.example.budgetbuddy.services.TransactionService
 
 class TransactionRepository {
 
-    private val transactionService: TransactionService = ApiClient.createService(TransactionService::class.java)
+    private val transactionService: TransactionService =
+        ApiClient.createService(TransactionService::class.java)
 
     suspend fun getTransactions(authToken: String): List<Transaction> {
         return transactionService.getTransactions("Bearer $authToken")
@@ -14,5 +15,9 @@ class TransactionRepository {
 
     suspend fun getTotalSpent(authToken: String): Double {
         return transactionService.getTotalSpent("Bearer $authToken").total_spent
+    }
+
+    suspend fun getBalance(authToken: String, year: Int, month: Int): Double {
+        return transactionService.getBalance("Bearer $authToken", year, month).balance
     }
 }

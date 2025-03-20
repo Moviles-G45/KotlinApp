@@ -19,6 +19,7 @@ import com.example.budgetbuddy.R
 import com.example.budgetbuddy.navigation.Screen
 import com.example.budgetbuddy.ui.components.BottomNavBar
 import com.example.budgetbuddy.ui.theme.DarkGreen
+import com.example.budgetbuddy.ui.theme.DarkTeal
 import com.example.budgetbuddy.ui.theme.LightGreenishWhite
 import com.example.budgetbuddy.ui.theme.NeonGreen
 import com.example.budgetbuddy.ui.theme.PrimaryBlue
@@ -42,8 +43,8 @@ fun HomeScreen(
     }
 
     val transactions by transactionViewModel.transactions
-
     val totalExpense by transactionViewModel.totalExpense
+    val totalBalance by transactionViewModel.totalBalance
 
     val greeting = remember {
         val calendar = Calendar.getInstance()
@@ -77,23 +78,41 @@ fun HomeScreen(
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.expense),
-                        contentDescription = "Expense Icon",
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = "Total Expense",
-                        style = MaterialTheme.typography.bodySmall.copy(color = PureWhite)
-                    )
+                    Column {
+                        Text(
+                            text = "Total Balance",
+                            style = MaterialTheme.typography.bodySmall.copy(color = DarkTeal)
+                        )
+                        Text(
+                            text = "$${totalBalance}",
+                            style = MaterialTheme.typography.headlineMedium.copy(color = Color(0xFFF1FFF3))
+                        )
+                    }
+                    Column {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.expense),
+                                contentDescription = "Expense Icon",
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = "Total Expense",
+                                style = MaterialTheme.typography.bodySmall.copy(color = DarkTeal)
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "-$${totalExpense}",
+                            style = MaterialTheme.typography.headlineMedium.copy(color = NeonGreen)
+                        )
+                    }
                 }
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = "-$${totalExpense}",
-                    style = MaterialTheme.typography.headlineMedium.copy(color = NeonGreen)
-                )
             }
         }
 
@@ -198,3 +217,4 @@ fun HomeScreen(
         }
     }
 }
+

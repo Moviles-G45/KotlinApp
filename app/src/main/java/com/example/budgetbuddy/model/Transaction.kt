@@ -20,3 +20,7 @@ data class CategoryType(
 data class TotalSpent(
     val total_spent: Double
 )
+
+data class Balance(
+    val balance: Double
+)
