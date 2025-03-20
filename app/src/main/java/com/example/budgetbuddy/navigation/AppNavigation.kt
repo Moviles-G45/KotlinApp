@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.example.budgetbuddy.ui.screens.CreateExpenseScreen
 import com.example.budgetbuddy.ui.screens.LaunchScreen
 import com.example.budgetbuddy.ui.screens.LoginScreen
 import com.example.budgetbuddy.ui.screens.SignUpScreen // 🔥 Agregamos SignUp
@@ -11,6 +12,7 @@ import com.example.budgetbuddy.ui.screens.ForgotPasswordScreen // 🔥 Agregamos
 import com.example.budgetbuddy.ui.screens.HomeScreen
 import com.example.budgetbuddy.ui.screens.SplashScreen
 import com.example.budgetbuddy.viewmodel.AuthViewModel
+import com.example.budgetbuddy.viewmodel.TransactionCreateViewModel
 
 sealed class Screen(val route: String) {
     object Splash : Screen("splash")
@@ -19,6 +21,7 @@ sealed class Screen(val route: String) {
     object SignUp : Screen("signup")
     object ForgotPassword : Screen("forgot_password")
     object Home : Screen("home")
+    object AddExpense : Screen("add_expense")
 }
 
 @Composable
@@ -33,5 +36,7 @@ fun AppNavigation(navController: NavHostController, authViewModel: AuthViewModel
         { SignUpScreen(navController,authViewModel ) }
         composable(Screen.ForgotPassword.route) { ForgotPasswordScreen(navController) }
         composable(Screen.Home.route) { HomeScreen(navController, authViewModel) }
+        composable(Screen.AddExpense.route) {CreateExpenseScreen(navController, authViewModel)
+        }
     }
 }
