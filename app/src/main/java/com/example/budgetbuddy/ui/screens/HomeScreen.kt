@@ -1,5 +1,6 @@
 package com.example.budgetbuddy.ui.screens
 
+import IncomeExpenseProgressBar
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -45,6 +46,7 @@ fun HomeScreen(
     val transactions by transactionViewModel.transactions
     val totalExpense by transactionViewModel.totalExpense
     val totalBalance by transactionViewModel.totalBalance
+    val totalIncome by transactionViewModel.totalIncome
 
     val greeting = remember {
         val calendar = Calendar.getInstance()
@@ -93,9 +95,7 @@ fun HomeScreen(
                         )
                     }
                     Column {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(
                                 painter = painterResource(id = R.drawable.expense),
                                 contentDescription = "Expense Icon",
@@ -113,9 +113,18 @@ fun HomeScreen(
                         )
                     }
                 }
+
+                // === AÑADIMOS AQUÍ LA BARRA DE PROGRESO ===
+                Spacer(modifier = Modifier.height(8.dp))
+                IncomeExpenseProgressBar(
+                    totalIncome = totalIncome,
+                    totalExpense = totalExpense
+                )
+                // =========================================
             }
         }
 
+        // Resto de la pantalla
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -146,7 +155,6 @@ fun HomeScreen(
                                     .padding(12.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-
                                 Column(modifier = Modifier.weight(1f)) {
                                     Text(
                                         text = transaction.description,
@@ -217,4 +225,3 @@ fun HomeScreen(
         }
     }
 }
-

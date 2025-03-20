@@ -1,5 +1,6 @@
 package com.example.budgetbuddy.repository
 
+import com.example.budgetbuddy.model.Balance
 import com.example.budgetbuddy.model.Transaction
 import com.example.budgetbuddy.network.ApiClient
 import com.example.budgetbuddy.services.TransactionService
@@ -17,7 +18,7 @@ class TransactionRepository {
         return transactionService.getTotalSpent("Bearer $authToken").total_spent
     }
 
-    suspend fun getBalance(authToken: String, year: Int, month: Int): Double {
-        return transactionService.getBalance("Bearer $authToken", year, month).balance
+    suspend fun getBalance(authToken: String, year: Int, month: Int): Balance {
+        return transactionService.getBalance("Bearer $authToken", year, month)
     }
 }

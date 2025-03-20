@@ -22,5 +22,7 @@ data class TotalSpent(
 )
 
 data class Balance(
-    val balance: Double
+    val balance: Double,
+    val total_earnings: Double,
+    val total_expenses: Double
 )

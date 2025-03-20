@@ -4,6 +4,7 @@ import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import com.example.budgetbuddy.R
@@ -50,6 +51,12 @@ val Typography = Typography(
     labelMedium = TextStyle(
         fontFamily = Poppins,
         fontWeight = FontWeight.Light,
+        fontSize = 13.sp
+    ),
+    bodyMedium = TextStyle(
+        fontFamily = Poppins,
+        fontWeight = FontWeight.Medium,
+        fontStyle = FontStyle.Italic,
         fontSize = 13.sp
     )
 )
