@@ -51,12 +51,13 @@ fun CreateExpenseScreen(
         Spacer(modifier = Modifier.height(10.dp))
 
         // Selector de Fecha
-        DatePickerField(
-            context = context,
-            label = "Date",
-            date = date,
-            onDateSelected = { selectedDate -> date = selectedDate }
+        OutlinedTextField(
+            value = date,
+            onValueChange = { date = it },
+            label = { Text("Date (YYYY-MM-DD)") },
+            modifier = Modifier.fillMaxWidth()
         )
+
 
         Spacer(modifier = Modifier.height(10.dp))
 

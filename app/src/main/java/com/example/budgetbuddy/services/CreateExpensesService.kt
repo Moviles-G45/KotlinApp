@@ -9,7 +9,7 @@ import retrofit2.http.Header
 import retrofit2.http.POST
 
 interface CreateExpensesService {
-    @POST("/transactions")
+    @POST("transactions")
     suspend fun addTransaction(
         @Body transaction: TransactionRequest,
         @Header("Authorization") authToken: String
