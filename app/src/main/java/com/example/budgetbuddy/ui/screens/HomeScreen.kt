@@ -1,81 +1,181 @@
 package com.example.budgetbuddy.ui.screens
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Button
-import androidx.compose.material3.Text
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.budgetbuddy.navigation.Screen
+import com.example.budgetbuddy.ui.components.BottomNavBar
+import com.example.budgetbuddy.ui.theme.DarkGreen
+import com.example.budgetbuddy.ui.theme.LightGreenishWhite
+import com.example.budgetbuddy.ui.theme.NeonGreen
+import com.example.budgetbuddy.ui.theme.PrimaryBlue
+import com.example.budgetbuddy.ui.theme.PureWhite
 import com.example.budgetbuddy.viewmodel.AuthViewModel
 import com.example.budgetbuddy.viewmodel.TransactionViewModel
+import java.util.Calendar
 
 @Composable
 fun HomeScreen(
     navController: NavController,
     authViewModel: AuthViewModel,
-    transactionViewModel: TransactionViewModel = viewModel() // o inyectado por Hilt
+    transactionViewModel: TransactionViewModel = viewModel()
 ) {
-    // Se recupera el token persistido usando el método del AuthViewModel
     val userToken = authViewModel.getPersistedToken()
 
-    // Llamamos a fetchTransactions cuando la pantalla se compone y el token no es nulo
     LaunchedEffect(userToken) {
         userToken?.let { token ->
             transactionViewModel.fetchTransactions(token)
         }
     }
 
-    // Obtenemos la lista de transacciones
     val transactions by transactionViewModel.transactions
+
+    val greeting = remember {
+        val calendar = Calendar.getInstance()
+        val hour = calendar.get(Calendar.HOUR_OF_DAY)
+        when {
+            hour < 12 -> "Good morning"
+            hour < 18 -> "Good afternoon"
+            else -> "Good evening"
+        }
+    }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.Top,
-        horizontalAlignment = Alignment.CenterHorizontally
+            .background(PrimaryBlue)
     ) {
-        Text(
-            text = "Welcome to BudgetBuddy!",
-            fontSize = 24.sp
-        )
-
-        Spacer(modifier = Modifier.height(20.dp))
-
-        // Mostrar la lista de transacciones
-        LazyColumn(
-            modifier = Modifier.weight(1f),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(PrimaryBlue)
+                .padding(16.dp)
         ) {
-            items(transactions) { transaction ->
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Text(text = transaction.description)
-                    Text(text = transaction.amount)
-                }
+            Column {
+                Text(
+                    text = "Hi, welcome back!",
+                    style = MaterialTheme.typography.headlineLarge.copy(color = PureWhite)
+                )
+                Text(
+                    text = greeting,
+                    style = MaterialTheme.typography.bodyLarge.copy(color = PureWhite)
+                )
             }
         }
 
-        Spacer(modifier = Modifier.height(20.dp))
-
-        Button(
-            onClick = {
-                authViewModel.logout()
-                navController.navigate(Screen.Login.route) {
-                    popUpTo(Screen.Home.route) { inclusive = true }
-                }
-            }
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(
+                    color = LightGreenishWhite,
+                    shape = RoundedCornerShape(topStart = 50.dp, topEnd = 50.dp)
+                )
         ) {
-            Text(text = "Log Out")
+            Column(
+                modifier = Modifier.fillMaxSize()
+            ) {
+                Spacer(Modifier.height(16.dp))
+
+                LazyColumn(
+                    modifier = Modifier.weight(1f),
+                    contentPadding = PaddingValues(horizontal = 16.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    items(transactions) { transaction ->
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(MaterialTheme.shapes.medium),
+                            colors = CardDefaults.cardColors(containerColor = LightGreenishWhite)
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(12.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(
+                                        text = transaction.description,
+                                        style = MaterialTheme.typography.titleMedium.copy(color = DarkGreen)
+                                    )
+                                    Text(
+                                        text = transaction.date,
+                                        style = MaterialTheme.typography.labelSmall.copy(color = NeonGreen)
+                                    )
+                                }
+
+                                Box(
+                                    modifier = Modifier
+                                        .width(1.dp)
+                                        .height(40.dp)
+                                        .background(Color(0xFF00D09E))
+                                )
+
+                                Column(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .padding(horizontal = 8.dp),
+                                    horizontalAlignment = Alignment.CenterHorizontally
+                                ) {
+                                    Text(
+                                        text = transaction.category.name,
+                                        style = MaterialTheme.typography.labelMedium.copy(color = DarkGreen)
+                                    )
+                                }
+
+                                Box(
+                                    modifier = Modifier
+                                        .width(1.dp)
+                                        .height(40.dp)
+                                        .background(Color(0xFF00D09E))
+                                )
+
+                                Column(
+                                    modifier = Modifier.weight(1f),
+                                    horizontalAlignment = Alignment.End
+                                ) {
+                                    val isType1 = transaction.category.category_type.id == 1
+                                    val amountStr = if (isType1) "$${transaction.amount}" else "-$${transaction.amount}"
+                                    val amountColor = if (isType1) DarkGreen else NeonGreen
+                                    Text(
+                                        text = amountStr,
+                                        style = MaterialTheme.typography.titleMedium.copy(color = amountColor)
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+
+                Spacer(Modifier.height(16.dp))
+
+                BottomNavBar(
+                    onHomeClick = {
+                        navController.navigate(Screen.Home.route) {
+                        }
+                    },
+                    onProfileClick = {
+                        authViewModel.logout()
+                        navController.navigate(Screen.Login.route) {
+                            popUpTo(Screen.Home.route) { inclusive = true }
+                        }
+                    }
+                )
+            }
         }
     }
 }
+
