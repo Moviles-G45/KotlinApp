@@ -25,6 +25,15 @@ class TransactionViewModel : ViewModel() {
     private val _totalIncome = mutableStateOf(0.0)
     val totalIncome: State<Double> get() = _totalIncome
 
+    private val _needsSpent = mutableStateOf(0.0)
+    val needsSpent: State<Double> get() = _needsSpent
+
+    private val _wantsSpent = mutableStateOf(0.0)
+    val wantsSpent: State<Double> get() = _wantsSpent
+
+    private val _savingsSpent = mutableStateOf(0.0)
+    val savingsSpent: State<Double> get() = _savingsSpent
+
     fun fetchTransactions(
         token: String,
         startDate: String? = null,
@@ -43,9 +52,14 @@ class TransactionViewModel : ViewModel() {
                 val year = calendar.get(Calendar.YEAR)
                 val month = calendar.get(Calendar.MONTH) + 1
                 val balance = repository.getBalance(token, year, month)
+
                 _totalBalance.value = balance.balance
                 _totalIncome.value = balance.total_earnings
                 _totalExpense.value = balance.total_expenses
+                _needsSpent.value = balance.needs_spent
+                _wantsSpent.value = balance.wants_spent
+                _savingsSpent.value = balance.savings_spent
+
             } catch (e: Exception) {
                 e.printStackTrace()
             }

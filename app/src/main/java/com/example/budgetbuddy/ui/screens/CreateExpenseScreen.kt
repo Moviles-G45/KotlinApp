@@ -37,7 +37,7 @@ fun CreateExpenseScreen(
     var message by remember { mutableStateOf("") }
 
     // Mapeo de categorías (nombre -> ID)
-    val categoryMap = mapOf("Food" to 1, "Transport" to 2, "Shopping" to 3, "Bills" to 4)
+    val categoryMap = mapOf("Food" to 1, "Transport" to 3, "Shopping" to 5, "Bills" to 7)
 
     Column(
         modifier = Modifier

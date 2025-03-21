@@ -1,6 +1,7 @@
 package com.example.budgetbuddy.ui.screens
 
 import IncomeExpenseProgressBar
+import SavingsPanel
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -91,8 +92,10 @@ fun HomeScreen(
     val totalExpense by transactionViewModel.totalExpense
     val totalBalance by transactionViewModel.totalBalance
     val totalIncome by transactionViewModel.totalIncome
+    val needsSpent by transactionViewModel.needsSpent
+    val wantsSpent by transactionViewModel.wantsSpent
+    val savingsSpent by transactionViewModel.savingsSpent
 
-    // Cálculo de greeting
     val greeting = remember {
         val hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
         when {
@@ -115,6 +118,7 @@ fun HomeScreen(
                 .padding(16.dp)
         ) {
             Column {
+                // Título y greeting
                 Text(
                     text = "Hi, welcome back!",
                     style = MaterialTheme.typography.headlineLarge.copy(color = PureWhite)
@@ -124,6 +128,8 @@ fun HomeScreen(
                     style = MaterialTheme.typography.bodyLarge.copy(color = PureWhite)
                 )
                 Spacer(modifier = Modifier.height(8.dp))
+
+                // Balance y Expense
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -144,14 +150,14 @@ fun HomeScreen(
                             Icon(
                                 painter = painterResource(id = R.drawable.expense),
                                 contentDescription = "Expense Icon",
+                                modifier = Modifier.size(12.dp),
                             )
-                            Spacer(modifier = Modifier.width(8.dp))
+                            Spacer(modifier = Modifier.width(4.dp))
                             Text(
                                 text = "Total Expense",
                                 style = MaterialTheme.typography.bodySmall.copy(color = DarkTeal)
                             )
                         }
-                        Spacer(modifier = Modifier.height(4.dp))
                         Text(
                             text = "-$${totalExpense}",
                             style = MaterialTheme.typography.headlineMedium.copy(color = NeonGreen)
@@ -183,6 +189,23 @@ fun HomeScreen(
             ) {
                 Spacer(Modifier.height(16.dp))
 
+                // 1) NUEVO: SavingsPanel (arriba del FilterPanel)
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp)
+                ) {
+                    SavingsPanel(
+                        totalIncome = totalIncome,
+                        savingsSpent = savingsSpent,
+                        needsSpent = needsSpent,
+                        wantsSpent = wantsSpent
+                    )
+                }
+
+                Spacer(Modifier.height(16.dp))
+
+                // 2) FilterPanel
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -196,6 +219,7 @@ fun HomeScreen(
 
                 Spacer(Modifier.height(16.dp))
 
+                // 3) Lista de transacciones
                 LazyColumn(
                     modifier = Modifier.weight(1f),
                     contentPadding = PaddingValues(horizontal = 16.dp),
@@ -270,7 +294,6 @@ fun HomeScreen(
 
                 Spacer(Modifier.height(16.dp))
 
-                // Barra de navegación inferior
                 BottomNavBar(
                     onHomeClick = { navController.navigate(Screen.Home.route) },
                     onAddExpenseClick = { navController.navigate(Screen.AddExpense.route) },
@@ -285,6 +308,7 @@ fun HomeScreen(
         }
     }
 }
+
 
 // Utilidad para formatear la fecha del Calendar a "yyyy-MM-dd"
 fun formatDate(calendar: Calendar): String {
