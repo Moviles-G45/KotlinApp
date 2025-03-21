@@ -3,8 +3,10 @@ package com.example.budgetbuddy.ui.screens
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
@@ -30,7 +32,7 @@ import com.example.budgetbuddy.viewmodel.AuthState
 
 
 @Composable
-fun SignUpScreen(navController: NavController , authViewModel: AuthViewModel) {
+fun SignUpScreen(navController: NavController, authViewModel: AuthViewModel) {
     var fullName by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var mobileNumber by remember { mutableStateOf("") }
@@ -39,21 +41,31 @@ fun SignUpScreen(navController: NavController , authViewModel: AuthViewModel) {
     var confirmPassword by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
     var confirmPasswordVisible by remember { mutableStateOf(false) }
-    val authState by authViewModel.authState.collectAsState() // Observar cambios
-
+    val authState by authViewModel.authState.collectAsState()
+    val scrollState = rememberScrollState()
 
     Box(
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier
+            .fillMaxSize()
             .navigationBarsPadding(),
     ) {
         // 🔵 Fondo azul oscuro en la parte superior
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(200.dp)
-                .background(Color(0xFF4682B4))
-                .navigationBarsPadding(),
-        )
+                .height(170.dp)
+                .background(Color(0xFF4682B4)),
+            contentAlignment = Alignment.Center // 🔹 Centra el texto dentro del fondo azul
+        ) {
+            Text(
+                text = "Create Account", // 🔥 Ahora se muestra bien en la parte superior
+                fontSize = 30.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.White,
+                textAlign = TextAlign.Center
+            )
+        }
+
 
         // 🔳 Sección clara con esquinas redondeadas
         Column(
@@ -65,28 +77,26 @@ fun SignUpScreen(navController: NavController , authViewModel: AuthViewModel) {
                     shape = RoundedCornerShape(topStart = 50.dp, topEnd = 50.dp)
                 )
                 .padding(horizontal = 16.dp)
+                .verticalScroll(scrollState) // 🔹 Habilitar scroll
                 .navigationBarsPadding(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // 🏷️ Título
-            Text(
-                text = "Create Account",
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.White,
-                modifier = Modifier.offset(y = -50.dp),
-                textAlign = TextAlign.Center
-            )
-
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(50.dp))
 
             // 📝 Campos del formulario
-            CustomTextField(label = "Full Name", value = fullName, onValueChange = { fullName = it })
+            CustomTextField(
+                label = "Full Name",
+                value = fullName,
+                onValueChange = { fullName = it })
             CustomTextField(label = "Email", value = email, onValueChange = { email = it })
-            CustomTextField(label = "Mobile Number", value = mobileNumber, onValueChange = { mobileNumber = it })
-            FechaTextField(label = "Date Of Birth", value = dateOfBirth, onValueChange = { dateOfBirth = it })
-
-
+            CustomTextField(
+                label = "Mobile Number",
+                value = mobileNumber,
+                onValueChange = { mobileNumber = it })
+            FechaTextField(
+                label = "Date Of Birth",
+                value = dateOfBirth,
+                onValueChange = { dateOfBirth = it })
 
             PasswordTextField(
                 label = "Password",
@@ -118,8 +128,10 @@ fun SignUpScreen(navController: NavController , authViewModel: AuthViewModel) {
 
             // 🔹 Botón "Sign Up"
             Button(
-                onClick = { val user = UserRequest(fullName, email, password, dateOfBirth, mobileNumber)
-                    authViewModel.signup(user) },
+                onClick = {
+                    val user = UserRequest(fullName, email, password, dateOfBirth, mobileNumber)
+                    authViewModel.signup(user)
+                },
                 modifier = Modifier
                     .width(200.dp)
                     .height(45.dp),
@@ -128,18 +140,23 @@ fun SignUpScreen(navController: NavController , authViewModel: AuthViewModel) {
             ) {
                 Text(text = "Sign Up", fontSize = 16.sp, color = Color.White)
             }
+
             when (authState) {
                 is AuthState.Loading -> CircularProgressIndicator()
                 is AuthState.Success -> {
                     Text("Sign Up Successful!", color = MaterialTheme.colorScheme.primary)
-                    navController.navigate(Screen.Home.route) {  // 🔥 Ir a Home en lugar de Login
-                        popUpTo(Screen.SignUp.route) { inclusive = true } // 🔄 Evita regresar al SignUp
+                    navController.navigate(Screen.Home.route) {
+                        popUpTo(Screen.SignUp.route) { inclusive = true }
                     }
                 }
-                is AuthState.Error -> Text("Error: ${(authState as AuthState.Error).message}", color = MaterialTheme.colorScheme.error)
+
+                is AuthState.Error -> Text(
+                    "Error: ${(authState as AuthState.Error).message}",
+                    color = MaterialTheme.colorScheme.error
+                )
+
                 else -> {}
             }
-        }
 
             Spacer(modifier = Modifier.height(10.dp))
 
@@ -157,8 +174,11 @@ fun SignUpScreen(navController: NavController , authViewModel: AuthViewModel) {
                     }
                 )
             }
+
+            Spacer(modifier = Modifier.height(50.dp))
         }
     }
+}
 
 
 // 🔹 Función reutilizable para TextFields normales
