@@ -23,6 +23,8 @@ import androidx.navigation.NavController
 import com.example.budgetbuddy.R
 import com.example.budgetbuddy.navigation.Screen
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.OutlinedTextField
 import com.example.budgetbuddy.viewmodel.AuthState
@@ -33,8 +35,8 @@ fun LoginScreen(navController: NavController, authViewModel: AuthViewModel) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
-
-    val authState by authViewModel.authState.collectAsState() // Observar cambios
+    val scrollState = rememberScrollState()
+    val authState by authViewModel.authState.collectAsState()
 
     Box(modifier = Modifier.fillMaxSize()) {
         // 🔵 Fondo azul oscuro en la parte superior
@@ -42,8 +44,17 @@ fun LoginScreen(navController: NavController, authViewModel: AuthViewModel) {
             modifier = Modifier
                 .fillMaxWidth()
                 .height(220.dp)
-                .background(Color(0xFF4682B4))
-        )
+                .background(Color(0xFF4682B4)),
+            contentAlignment = Alignment.Center // 🔹 Centra el texto dentro del fondo azul
+        ) {
+            Text(
+                text = "Welcome", // 🔥 Ahora se muestra bien en la parte superior
+                fontSize = 30.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.White,
+                textAlign = TextAlign.Center
+            )
+        }
 
         // 🔳 Sección clara con esquinas redondeadas
         Column(
@@ -54,21 +65,12 @@ fun LoginScreen(navController: NavController, authViewModel: AuthViewModel) {
                     color = Color(0xFFD2E2F2),
                     shape = RoundedCornerShape(topStart = 50.dp, topEnd = 50.dp)
                 )
-                .padding(horizontal = 16.dp),
+                .padding(horizontal = 16.dp)
+                .verticalScroll(scrollState), // 🔹 Habilitar scroll
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // 🏷️ Título "Welcome"
-            Text(
-                text = "Welcome",
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.White,
-                modifier = Modifier.offset(y = -100.dp),
-                textAlign = TextAlign.Center
-            )
-
-            Spacer(modifier = Modifier.height(10.dp))
-            TextFieldWithLabel(label = "Username Or Email", value = email, onValueChange = { email = it })
+            Spacer(modifier = Modifier.height(50.dp))
+            TextFieldWithLabel(label = "Email", value = email, onValueChange = { email = it })
             TextFieldWithLabel(
                 label = "Password",
                 value = password,
@@ -92,21 +94,22 @@ fun LoginScreen(navController: NavController, authViewModel: AuthViewModel) {
                 Text(text = "Log In", fontSize = 16.sp)
             }
 
-            // 🔄 Mostrar Loading, Éxito o Error
+            // Mostrar estados de autenticación
             when (authState) {
                 is AuthState.Loading -> CircularProgressIndicator(color = Color.Blue)
                 is AuthState.Success -> {
                     Text("Login exitoso!", color = MaterialTheme.colorScheme.primary)
                     LaunchedEffect(Unit) {
-                        navController.navigate(Screen.Home.route) {  // 🔥 Ir a Home en lugar de Login
-                            popUpTo(Screen.SignUp.route) { inclusive = true } // 🔄 Evita regresar al SignUp
-                        }                    }
+                        navController.navigate(Screen.Home.route) {
+                            popUpTo(Screen.SignUp.route) { inclusive = true }
+                        }
+                    }
                 }
                 is AuthState.Error -> {
                     val errorMessage = (authState as? AuthState.Error)?.message ?: "Unknown error"
                     Text(text = "Login failed: $errorMessage", color = Color.Red, fontWeight = FontWeight.Bold)
                 }
-                else -> {} // No hacer nada en estado inicial
+                else -> {}
             }
 
             Spacer(modifier = Modifier.height(10.dp))
@@ -126,35 +129,6 @@ fun LoginScreen(navController: NavController, authViewModel: AuthViewModel) {
                 Text(text = "Sign Up", fontSize = 16.sp)
             }
 
-            Spacer(modifier = Modifier.height(10.dp))
-
-            // 🔐 Uso de Huella Digital
-            Row(
-                modifier = Modifier.clickable { /* Implementar autenticación biométrica */ },
-                horizontalArrangement = Arrangement.Center
-            ) {
-                Icon(imageVector = Icons.Filled.Fingerprint, contentDescription = "Fingerprint", tint = Color.Blue)
-                Spacer(modifier = Modifier.width(4.dp))
-                Text(text = "Use Fingerprint To Access", fontSize = 14.sp, color = Color.Blue, fontWeight = FontWeight.Bold)
-            }
-
-            Spacer(modifier = Modifier.height(20.dp))
-
-            // 🏛️ Iniciar sesión con Redes Sociales
-            Row(horizontalArrangement = Arrangement.Center) {
-                Icon(
-                    painter = painterResource(id = R.drawable.facebook),
-                    contentDescription = "Facebook",
-                    modifier = Modifier.size(40.dp)
-                )
-                Spacer(modifier = Modifier.width(16.dp))
-                Icon(
-                    painter = painterResource(id = R.drawable.google),
-                    contentDescription = "Google",
-                    modifier = Modifier.size(40.dp)
-                )
-            }
-
             Spacer(modifier = Modifier.height(20.dp))
 
             // 🔹 Sign Up Link
@@ -168,6 +142,7 @@ fun LoginScreen(navController: NavController, authViewModel: AuthViewModel) {
         }
     }
 }
+
 
 // 🔹 Función reutilizable para TextFields
 @Composable
