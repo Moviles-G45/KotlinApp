@@ -16,6 +16,7 @@ okhttp = "4.9.3"
 firebase-auth = "22.1.2" # Asegúrate de usar la última versión estable
 firebase-bom = "32.7.2"
 lifecycleViewModel = "2.6.1"
+playServicesLocation = "21.3.0"
 
 
 
@@ -43,6 +44,7 @@ retrofit-gson = { group = "com.squareup.retrofit2", name = "converter-gson", ver
 okhttp-logging = { group = "com.squareup.okhttp3", name = "logging-interceptor", version.ref = "okhttp" }
 firebase-auth-ktx = { module = "com.google.firebase:firebase-auth-ktx", version.ref = "firebase-auth" }
 firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebase-bom" }
+play-services-location = { group = "com.google.android.gms", name = "play-services-location", version.ref = "playServicesLocation" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

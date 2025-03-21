@@ -57,13 +57,15 @@ dependencies {
     implementation(platform("com.google.firebase:firebase-bom:33.10.0"))
     implementation("com.google.firebase:firebase-analytics")
     implementation("androidx.security:security-crypto:1.1.0-alpha03")
-
+    implementation("com.google.android.gms:play-services-maps:18.1.0")
+    implementation("com.google.maps.android:maps-compose:2.11.2")
 
     // Dependencias para conectar con mi bonito back.
     implementation(libs.retrofit)
     implementation(libs.retrofit.gson)
     implementation(libs.okhttp.logging)
-    implementation(libs.androidx.lifecycle.viewmodel.compose) // Para ViewModel en Compose
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
+    implementation(libs.play.services.location) // Para ViewModel en Compose
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

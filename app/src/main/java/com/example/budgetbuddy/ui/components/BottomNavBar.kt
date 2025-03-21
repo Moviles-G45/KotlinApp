@@ -17,6 +17,7 @@ import com.example.budgetbuddy.ui.theme.PrimaryBlue
 enum class BottomNavTab {
     HOME,
     ADD,
+    MAP,
     PROFILE
 }
 
@@ -25,6 +26,7 @@ fun BottomNavBar(
     selectedTab: BottomNavTab,  // Parámetro para indicar el tab seleccionado
     onHomeClick: () -> Unit,
     onAddExpenseClick: () -> Unit,
+    onMapClick: () -> Unit,
     onProfileClick: () -> Unit
 ) {
     Box(
@@ -90,6 +92,31 @@ fun BottomNavBar(
                 }
             }
 
+
+            // Botón Map
+            IconButton(onClick = onMapClick) {
+                Box(
+                    modifier = Modifier.size(48.dp), // Contenedor de tamaño fijo
+                    contentAlignment = Alignment.Center
+                ) {
+                    if (selectedTab == BottomNavTab.MAP) {
+                        Box(
+                            modifier = Modifier
+                                .matchParentSize()
+                                .background(
+                                    color = PrimaryBlue,
+                                    shape = RoundedCornerShape(22.dp)
+                                )
+                        )
+                    }
+                    Icon(
+                        painter = painterResource(id = R.drawable.profile),
+                        contentDescription = "Profile Icon",
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
+            }
+
             // Botón Profile
             IconButton(onClick = onProfileClick) {
                 Box(
@@ -113,6 +140,7 @@ fun BottomNavBar(
                     )
                 }
             }
+
         }
     }
 }

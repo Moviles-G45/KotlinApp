@@ -57,6 +57,7 @@ fun CreateExpenseScreen(
                 selectedTab = BottomNavTab.ADD,
                 onHomeClick = { navController.navigate(Screen.Home.route) },
                 onAddExpenseClick = { navController.navigate(Screen.AddExpense.route) },
+                onMapClick = { navController.navigate(Screen.Map.route) },
                 onProfileClick = {
                     authViewModel.logout()
                     navController.navigate(Screen.Login.route) {
