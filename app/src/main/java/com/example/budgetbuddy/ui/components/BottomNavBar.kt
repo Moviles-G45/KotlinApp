@@ -14,12 +14,18 @@ import com.example.budgetbuddy.R
 import com.example.budgetbuddy.ui.theme.LightBlueAccent
 import com.example.budgetbuddy.ui.theme.PrimaryBlue
 
+enum class BottomNavTab {
+    HOME,
+    ADD,
+    PROFILE
+}
+
 @Composable
 fun BottomNavBar(
+    selectedTab: BottomNavTab,  // Parámetro para indicar el tab seleccionado
     onHomeClick: () -> Unit,
     onAddExpenseClick: () -> Unit,
-    onProfileClick: () -> Unit,
-    isHomeSelected: Boolean = true
+    onProfileClick: () -> Unit
 ) {
     Box(
         modifier = Modifier
@@ -36,44 +42,76 @@ fun BottomNavBar(
             horizontalArrangement = Arrangement.SpaceEvenly,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Botón de Home
+            // Botón Home
             IconButton(onClick = onHomeClick) {
-                if (isHomeSelected) {
-                    Box(
-                        modifier = Modifier
-                            .background(
-                                color = PrimaryBlue,
-                                shape = RoundedCornerShape(22.dp)
-                            )
-                            .padding(8.dp)
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.home),
-                            contentDescription = "Home Icon"
+                Box(
+                    modifier = Modifier.size(48.dp), // Contenedor de tamaño fijo
+                    contentAlignment = Alignment.Center
+                ) {
+                    if (selectedTab == BottomNavTab.HOME) {
+                        Box(
+                            modifier = Modifier
+                                .matchParentSize()
+                                .background(
+                                    color = PrimaryBlue,
+                                    shape = RoundedCornerShape(22.dp)
+                                )
                         )
                     }
-                } else {
                     Icon(
                         painter = painterResource(id = R.drawable.home),
-                        contentDescription = "Home Icon"
+                        contentDescription = "Home Icon",
+                        modifier = Modifier.size(24.dp)
                     )
                 }
             }
 
-            // Botón para agregar expense (icono de +)
+            // Botón Add (Expense)
             IconButton(onClick = onAddExpenseClick) {
-                Icon(
-                    painter = painterResource(id = R.drawable.add_expense),
-                    contentDescription = "Add Expense Icon"
-                )
+                Box(
+                    modifier = Modifier.size(48.dp), // Contenedor de tamaño fijo
+                    contentAlignment = Alignment.Center
+                ) {
+                    if (selectedTab == BottomNavTab.ADD) {
+                        Box(
+                            modifier = Modifier
+                                .matchParentSize()
+                                .background(
+                                    color = PrimaryBlue,
+                                    shape = RoundedCornerShape(22.dp)
+                                )
+                        )
+                    }
+                    Icon(
+                        painter = painterResource(id = R.drawable.add_expense),
+                        contentDescription = "Add Expense Icon",
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
             }
 
-            // Botón de Profile (cerrar sesión o perfil)
+            // Botón Profile
             IconButton(onClick = onProfileClick) {
-                Icon(
-                    painter = painterResource(id = R.drawable.profile),
-                    contentDescription = "Profile Icon"
-                )
+                Box(
+                    modifier = Modifier.size(48.dp), // Contenedor de tamaño fijo
+                    contentAlignment = Alignment.Center
+                ) {
+                    if (selectedTab == BottomNavTab.PROFILE) {
+                        Box(
+                            modifier = Modifier
+                                .matchParentSize()
+                                .background(
+                                    color = PrimaryBlue,
+                                    shape = RoundedCornerShape(22.dp)
+                                )
+                        )
+                    }
+                    Icon(
+                        painter = painterResource(id = R.drawable.profile),
+                        contentDescription = "Profile Icon",
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
             }
         }
     }

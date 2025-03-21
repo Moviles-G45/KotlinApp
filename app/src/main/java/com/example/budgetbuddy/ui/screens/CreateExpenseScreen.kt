@@ -21,6 +21,7 @@ import androidx.navigation.NavController
 import com.example.budgetbuddy.model.TransactionRequest
 import com.example.budgetbuddy.navigation.Screen
 import com.example.budgetbuddy.ui.components.BottomNavBar
+import com.example.budgetbuddy.ui.components.BottomNavTab
 import com.example.budgetbuddy.ui.components.DatePickerField
 import com.example.budgetbuddy.ui.theme.LightGreenishWhite
 import com.example.budgetbuddy.ui.theme.PrimaryBlue
@@ -53,6 +54,7 @@ fun CreateExpenseScreen(
         containerColor = LightGreenishWhite, // Color de fondo general
         bottomBar = {
             BottomNavBar(
+                selectedTab = BottomNavTab.ADD,
                 onHomeClick = { navController.navigate(Screen.Home.route) },
                 onAddExpenseClick = { navController.navigate(Screen.AddExpense.route) },
                 onProfileClick = {

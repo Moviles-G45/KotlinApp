@@ -19,6 +19,7 @@ import androidx.navigation.NavController
 import com.example.budgetbuddy.R
 import com.example.budgetbuddy.navigation.Screen
 import com.example.budgetbuddy.ui.components.BottomNavBar
+import com.example.budgetbuddy.ui.components.BottomNavTab
 import com.example.budgetbuddy.ui.components.FilterPanel
 import com.example.budgetbuddy.ui.components.FilterType
 import com.example.budgetbuddy.ui.components.SavingsPanel
@@ -343,6 +344,7 @@ fun HomeScreen(
                 Spacer(Modifier.height(16.dp))
 
                 BottomNavBar(
+                    selectedTab = BottomNavTab.HOME,
                     onHomeClick = { navController.navigate(Screen.Home.route) },
                     onAddExpenseClick = { navController.navigate(Screen.AddExpense.route) },
                     onProfileClick = {
