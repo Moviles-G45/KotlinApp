@@ -35,6 +35,6 @@ fun AppNavigation(navController: NavHostController, authViewModel: AuthViewModel
         composable(Screen.ForgotPassword.route) { ForgotPasswordScreen(navController) }
         composable(Screen.Home.route) { HomeScreen(navController, authViewModel) }
         composable(Screen.AddExpense.route) { CreateExpenseScreen(navController, authViewModel) }
-        composable(Screen.Map.route) { ATMMapScreen() }
+        composable(Screen.Map.route) { ATMMapScreen(navController, authViewModel) }
     }
 }

@@ -1,7 +1,6 @@
 package com.example.budgetbuddy.ui.screens
 
 import android.annotation.SuppressLint
-import android.content.Context
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -17,10 +16,16 @@ import com.google.maps.android.compose.*
 import com.example.budgetbuddy.viewmodel.ATMViewModel
 import com.example.budgetbuddy.model.ATM
 import com.google.android.gms.maps.CameraUpdateFactory
+import androidx.compose.ui.Alignment
+import androidx.navigation.NavController
+import com.example.budgetbuddy.navigation.Screen
+import com.example.budgetbuddy.ui.components.BottomNavBar
+import com.example.budgetbuddy.ui.components.BottomNavTab
+import com.example.budgetbuddy.viewmodel.AuthViewModel
 
 @SuppressLint("MissingPermission")
 @Composable
-fun ATMMapScreen(viewModel: ATMViewModel = viewModel()) {
+fun ATMMapScreen(navController: NavController, authViewModel: AuthViewModel, viewModel: ATMViewModel = viewModel()) {
     val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsState()
     val userLocation = uiState.userLocation
@@ -44,13 +49,12 @@ fun ATMMapScreen(viewModel: ATMViewModel = viewModel()) {
         }
     }
 
-
     Box(modifier = Modifier.fillMaxSize()) {
         GoogleMap(
             modifier = Modifier.fillMaxSize(),
             cameraPositionState = cameraPositionState
         ) {
-            //  Ubicación del usuario en el mapa
+            // Ubicación del usuario en el mapa
             userLocation?.let {
                 Marker(
                     state = MarkerState(position = it),
@@ -60,7 +64,7 @@ fun ATMMapScreen(viewModel: ATMViewModel = viewModel()) {
                 )
             }
 
-            //  Agregar marcadores de los ATMs
+            // Agregar marcadores de los ATMs
             atms.forEach { atm ->
                 Marker(
                     state = MarkerState(position = LatLng(atm.latitud, atm.longitud)),
@@ -74,12 +78,13 @@ fun ATMMapScreen(viewModel: ATMViewModel = viewModel()) {
             }
         }
 
-        //  Muestra la información del ATM seleccionado
+        // Muestra la información del ATM seleccionado
         selectedATM?.let { atm ->
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp),
+                    .padding(16.dp)
+                    .align(Alignment.TopCenter),
                 elevation = CardDefaults.cardElevation(8.dp)
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
@@ -89,5 +94,25 @@ fun ATMMapScreen(viewModel: ATMViewModel = viewModel()) {
                 }
             }
         }
+
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .align(Alignment.BottomCenter)
+        ) {
+            BottomNavBar(
+                selectedTab = BottomNavTab.MAP,
+                onHomeClick = { navController.navigate(Screen.Home.route) },
+                onAddExpenseClick = { navController.navigate(Screen.AddExpense.route) },
+                onMapClick = { navController.navigate(Screen.Map.route) },
+                onProfileClick = {
+                    authViewModel.logout()
+                    navController.navigate(Screen.Login.route) {
+                        popUpTo(Screen.Home.route) { inclusive = true }
+                    }
+                }
+            )
+        }
+
     }
 }
