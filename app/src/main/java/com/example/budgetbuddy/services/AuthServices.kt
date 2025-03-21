@@ -8,6 +8,7 @@ import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.POST
+import retrofit2.http.Query
 
 interface AuthService {
     @POST("/auth/login")
@@ -17,7 +18,7 @@ interface AuthService {
     suspend fun signup(@Body user: UserRequest): Response<AuthResponse>
 
     @POST("/auth/recover")
-    suspend fun recoverPassword(@Body email: Map<String, String>): Response<AuthResponse>
+    suspend fun recoverPassword(@Query("email") email: String): Response<AuthResponse> // ✅ Ahora se envía como query param
 
     @POST("/auth/reset")
     suspend fun resetPassword(@Body resetData: Map<String, String>): Response<AuthResponse>

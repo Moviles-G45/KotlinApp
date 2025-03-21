@@ -44,7 +44,7 @@ class AuthRepository(private val authService: AuthService) {
     }
 
     suspend fun recoverPassword(email: String): Response<AuthResponse> {
-        return authService.recoverPassword(mapOf("email" to email))
+        return authService.recoverPassword(email) // ✅ Ahora pasamos solo el string, no un map
     }
 
     suspend fun resetPassword(token: String, newPassword: String): Response<AuthResponse> {
