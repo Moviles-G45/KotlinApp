@@ -1,69 +1,68 @@
 package com.example.budgetbuddy.ui.components
 
-import android.app.DatePickerDialog
-import android.content.Context
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import androidx.compose.ui.platform.LocalContext
 import java.text.SimpleDateFormat
 import java.util.*
 
+
+
+
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DatePickerField(
-    context: Context,
-    label: String,
-    date: String,
+    label: String = "Date (YYYY-MM-DD)",
+    selectedDate: String,
     onDateSelected: (String) -> Unit
 ) {
-    val calendar = Calendar.getInstance()
-    val dateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault())
+    var showDatePicker by remember { mutableStateOf(false) }
+    val dateFormatter = remember { SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()) }
 
-    val datePickerDialog = DatePickerDialog(
-        context,
-        { _, year, month, dayOfMonth ->
-            calendar.set(year, month, dayOfMonth, 0, 0, 0)
-            val formattedDate = dateFormat.format(calendar.time)
-            onDateSelected(formattedDate)
+    OutlinedTextField(
+        value = selectedDate,
+        onValueChange = { onDateSelected(it) },
+        label = { Text(label) },
+        modifier = Modifier.fillMaxWidth(),
+        trailingIcon = {
+            IconButton(onClick = { showDatePicker = true }) {
+                Icon(Icons.Default.CalendarToday, contentDescription = "Select Date")
+            }
         },
-        calendar.get(Calendar.YEAR),
-        calendar.get(Calendar.MONTH),
-        calendar.get(Calendar.DAY_OF_MONTH)
+        readOnly = true // Evita que el usuario escriba manualmente
     )
 
-    Column(modifier = Modifier.padding(horizontal = 20.dp)) {
-        Text(text = label, fontSize = 14.sp, color = Color.Black, fontWeight = FontWeight.Medium)
+    if (showDatePicker) {
+        val initialDateMillis = try {
+            dateFormatter.parse(selectedDate)?.time ?: System.currentTimeMillis()
+        } catch (e: Exception) {
+            System.currentTimeMillis()
+        }
 
-        // 🔹 Usa Box para que detecte el clic correctamente
-        Box(modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 6.dp)
-            .height(55.dp)
-            .clickable { datePickerDialog.show() } // ✅ Ahora sí abre el DatePicker
+        val datePickerState = rememberDatePickerState(initialSelectedDateMillis = initialDateMillis)
+
+        DatePickerDialog(
+            onDismissRequest = { showDatePicker = false },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        datePickerState.selectedDateMillis?.let { millis ->
+                            val formattedDate = dateFormatter.format(Date(millis))
+                            onDateSelected(formattedDate)
+                        }
+                        showDatePicker = false
+                    }
+                ) { Text("OK") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDatePicker = false }) { Text("Cancel") }
+            }
         ) {
-            OutlinedTextField(
-                value = date,
-                onValueChange = {},
-                readOnly = false, // ✅ Sigue siendo solo lectura
-                placeholder = { Text("YYYY-MM-DD", color = Color.Gray) },
-                shape = RoundedCornerShape(25.dp),
-                colors = TextFieldDefaults.colors(
-                    focusedTextColor = Color.Black,
-                    unfocusedTextColor = Color.Black,
-                    focusedContainerColor = Color.White,
-                    unfocusedContainerColor = Color.White,
-                    focusedIndicatorColor = Color.Gray,
-                    unfocusedIndicatorColor = Color.LightGray,
-                    cursorColor = Color.Black
-                ),
-                modifier = Modifier.fillMaxWidth(),
-            )
+            DatePicker(state = datePickerState)
         }
     }
 }
