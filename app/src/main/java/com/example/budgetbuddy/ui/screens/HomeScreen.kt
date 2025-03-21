@@ -1,7 +1,6 @@
 package com.example.budgetbuddy.ui.screens
 
 import IncomeExpenseProgressBar
-import SavingsPanel
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -22,6 +21,7 @@ import com.example.budgetbuddy.navigation.Screen
 import com.example.budgetbuddy.ui.components.BottomNavBar
 import com.example.budgetbuddy.ui.components.FilterPanel
 import com.example.budgetbuddy.ui.components.FilterType
+import com.example.budgetbuddy.ui.components.SavingsPanel
 import com.example.budgetbuddy.ui.theme.DarkGreen
 import com.example.budgetbuddy.ui.theme.DarkTeal
 import com.example.budgetbuddy.ui.theme.LightGreenishWhite
@@ -127,30 +127,52 @@ fun HomeScreen(
                     text = greeting,
                     style = MaterialTheme.typography.bodyLarge.copy(color = PureWhite)
                 )
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
                 // Balance y Expense
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp) // Más espacio a los lados
+                        .height(IntrinsicSize.Min),  // Para que la línea vertical se ajuste a la altura de la Row
+                    horizontalArrangement = Arrangement.SpaceAround,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Column {
-                        Text(
-                            text = "Total Balance",
-                            style = MaterialTheme.typography.bodySmall.copy(color = DarkTeal)
-                        )
+                    // ===== Columna Izquierda: Total Balance =====
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.balance),
+                                contentDescription = "Balance Icon",
+                                modifier = Modifier.size(16.dp),  // Ajusta tamaño si lo deseas
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = "Total Balance",
+                                style = MaterialTheme.typography.bodySmall.copy(color = DarkTeal)
+                            )
+                        }
                         Text(
                             text = "$${totalBalance}",
                             style = MaterialTheme.typography.headlineMedium.copy(color = Color(0xFFF1FFF3))
                         )
                     }
-                    Column {
+
+                    // ===== Línea divisoria vertical en el medio =====
+                    Box(
+                        modifier = Modifier
+                            .fillMaxHeight() // Se ajusta a la altura mínima de la Row
+                            .width(1.dp)
+                            .background(Color.White)
+                    )
+
+                    // ===== Columna Derecha: Total Expense =====
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(
                                 painter = painterResource(id = R.drawable.expense),
                                 contentDescription = "Expense Icon",
-                                modifier = Modifier.size(12.dp),
+                                modifier = Modifier.size(16.dp),
                             )
                             Spacer(modifier = Modifier.width(4.dp))
                             Text(
@@ -167,11 +189,37 @@ fun HomeScreen(
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                // Barra de progreso (arriba)
-                IncomeExpenseProgressBar(
-                    totalIncome = totalIncome,
-                    totalExpense = totalExpense
-                )
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 32.dp)
+                ) {
+                    IncomeExpenseProgressBar(
+                        totalIncome = totalIncome,
+                        totalExpense = totalExpense
+                    )
+                }
+
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                val fraction = if (totalIncome != 0.0) (totalExpense / totalIncome).toFloat() else 0f
+                val percentage = (fraction * 100).toInt()
+
+                val message = if (percentage < 80) "Looks good" else "Be careful"
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 32.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "$percentage% of your income. $message",
+                        style = MaterialTheme.typography.bodySmall.copy(color = DarkTeal)
+                    )
+                }
+
             }
         }
 

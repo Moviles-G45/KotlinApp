@@ -31,7 +31,6 @@ fun IncomeExpenseProgressBar(
             .height(30.dp)
             .clip(RoundedCornerShape(15.dp))
             .background(PrimaryBlue) // Color de borde
-            .padding(2.dp)                // Separación para ver el borde azul
     ) {
         // Fondo "track" de la barra (color claro)
         Box(
