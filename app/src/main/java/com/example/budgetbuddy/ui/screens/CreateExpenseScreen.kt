@@ -3,11 +3,9 @@ package com.example.budgetbuddy.ui.screens
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
-import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -25,10 +23,7 @@ import com.example.budgetbuddy.ui.theme.*
 import com.example.budgetbuddy.viewmodel.AuthViewModel
 import com.example.budgetbuddy.viewmodel.CategoryViewModel
 import com.example.budgetbuddy.viewmodel.TransactionCreateViewModel
-import java.text.SimpleDateFormat
-import java.util.*
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CreateExpenseScreen(
     navController: NavController,
@@ -178,7 +173,6 @@ fun CreateExpenseScreen(
             }
         }
 
-        // ===== BottomNavBar ANCLADO AL FONDO =====
         BottomNavBar(
             onHomeClick = { navController.navigate(Screen.Home.route) },
             onAddExpenseClick = { navController.navigate(Screen.AddExpense.route) },
