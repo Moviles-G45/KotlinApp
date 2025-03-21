@@ -16,28 +16,34 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.budgetbuddy.model.TransactionRequest
-import com.example.budgetbuddy.ui.components.DatePickerField
 import com.example.budgetbuddy.viewmodel.AuthViewModel
+import com.example.budgetbuddy.viewmodel.CategoryViewModel
 import com.example.budgetbuddy.viewmodel.TransactionCreateViewModel
 
 @Composable
 fun CreateExpenseScreen(
     navController: NavController,
     authViewModel: AuthViewModel,
-    transactionViewModel: TransactionCreateViewModel = viewModel()
+    transactionViewModel: TransactionCreateViewModel = viewModel(),
+    categoryViewModel: CategoryViewModel = viewModel()
 ) {
     val context = LocalContext.current
     val userToken = authViewModel.getPersistedToken() ?: ""
 
-    // Estados para los inputs
+    LaunchedEffect(Unit) {
+        categoryViewModel.fetchCategories()
+    }
+
+
+    val categories by categoryViewModel.categories.collectAsState()
+
+
     var date by remember { mutableStateOf("") }
-    var category by remember { mutableStateOf("") }
+    var categoryName by remember { mutableStateOf("") }
+    var categoryId by remember { mutableStateOf<Int?>(null) }
     var amount by remember { mutableStateOf("") }
     var title by remember { mutableStateOf("") }
     var message by remember { mutableStateOf("") }
-
-    // Mapeo de categorías (nombre -> ID)
-    val categoryMap = mapOf("Food" to 1, "Transport" to 3, "Shopping" to 5, "Bills" to 7)
 
     Column(
         modifier = Modifier
@@ -47,25 +53,21 @@ fun CreateExpenseScreen(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(text = "Add Expenses", fontSize = 24.sp)
-
         Spacer(modifier = Modifier.height(10.dp))
 
-        // Selector de Fecha
+        // Campo de fecha
         OutlinedTextField(
             value = date,
             onValueChange = { date = it },
             label = { Text("Date (YYYY-MM-DD)") },
             modifier = Modifier.fillMaxWidth()
         )
-
-
         Spacer(modifier = Modifier.height(10.dp))
 
-        // Selector de Categoría (Dropdown)
         var expanded by remember { mutableStateOf(false) }
         Box {
             OutlinedTextField(
-                value = category,
+                value = categoryName,
                 onValueChange = {},
                 label = { Text("Category") },
                 readOnly = true,
@@ -80,11 +82,12 @@ fun CreateExpenseScreen(
                 expanded = expanded,
                 onDismissRequest = { expanded = false }
             ) {
-                categoryMap.keys.forEach { item ->
+                categories.forEach { item ->
                     DropdownMenuItem(
-                        text = { Text(item) },
+                        text = { Text(item.name) },
                         onClick = {
-                            category = item
+                            categoryName = item.name
+                            categoryId = item.id
                             expanded = false
                         }
                     )
@@ -102,7 +105,6 @@ fun CreateExpenseScreen(
             keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
             modifier = Modifier.fillMaxWidth()
         )
-
         Spacer(modifier = Modifier.height(10.dp))
 
         // Título del gasto
@@ -112,7 +114,6 @@ fun CreateExpenseScreen(
             label = { Text("Expense Title") },
             modifier = Modifier.fillMaxWidth()
         )
-
         Spacer(modifier = Modifier.height(10.dp))
 
         // Mensaje opcional
@@ -122,23 +123,19 @@ fun CreateExpenseScreen(
             label = { Text("Enter Message") },
             modifier = Modifier.fillMaxWidth()
         )
-
         Spacer(modifier = Modifier.height(20.dp))
 
         // Botón Guardar
         Button(
             onClick = {
-                val categoryId = categoryMap[category] ?: 0
                 val parsedAmount = amount.toDoubleOrNull() ?: 0.0
-
-                if (date.isNotEmpty() && categoryId != 0 && parsedAmount > 0 && title.isNotEmpty()) {
+                if (date.isNotEmpty() && categoryId != null && parsedAmount > 0 && title.isNotEmpty()) {
                     val transaction = TransactionRequest(
                         date = date,
-                        category_id = categoryId,
+                        category_id = categoryId!!,
                         amount = parsedAmount,
                         description = title
                     )
-
                     transactionViewModel.createTransaction(transaction, userToken)
 
                     Toast.makeText(context, "Transaction Created!", Toast.LENGTH_SHORT).show()
