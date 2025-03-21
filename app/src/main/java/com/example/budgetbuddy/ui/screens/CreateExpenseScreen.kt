@@ -3,13 +3,16 @@ package com.example.budgetbuddy.ui.screens
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -19,7 +22,9 @@ import com.example.budgetbuddy.model.TransactionRequest
 import com.example.budgetbuddy.navigation.Screen
 import com.example.budgetbuddy.ui.components.BottomNavBar
 import com.example.budgetbuddy.ui.components.DatePickerField
-import com.example.budgetbuddy.ui.theme.*
+import com.example.budgetbuddy.ui.theme.LightGreenishWhite
+import com.example.budgetbuddy.ui.theme.PrimaryBlue
+import com.example.budgetbuddy.ui.theme.PureWhite
 import com.example.budgetbuddy.viewmodel.AuthViewModel
 import com.example.budgetbuddy.viewmodel.CategoryViewModel
 import com.example.budgetbuddy.viewmodel.TransactionCreateViewModel
@@ -33,10 +38,8 @@ fun CreateExpenseScreen(
 ) {
     val context = LocalContext.current
     val userToken = authViewModel.getPersistedToken() ?: ""
-
     LaunchedEffect(Unit) { categoryViewModel.fetchCategories() }
     val categories by categoryViewModel.categories.collectAsState()
-
     var date by remember { mutableStateOf("") }
     var categoryName by remember { mutableStateOf("") }
     var categoryId by remember { mutableStateOf<Int?>(null) }
@@ -45,16 +48,51 @@ fun CreateExpenseScreen(
     var message by remember { mutableStateOf("") }
     var expanded by remember { mutableStateOf(false) }
 
-    Box(modifier = Modifier.fillMaxSize()) {
-        Column(modifier = Modifier.fillMaxSize().background(PrimaryBlue)) {
-            // ===== SECCIÓN SUPERIOR (FONDO AZUL) =====
+    // Scaffold para la barra inferior y el fondo principal
+    Scaffold(
+        containerColor = LightGreenishWhite, // Color de fondo general
+        bottomBar = {
+            BottomNavBar(
+                onHomeClick = { navController.navigate(Screen.Home.route) },
+                onAddExpenseClick = { navController.navigate(Screen.AddExpense.route) },
+                onProfileClick = {
+                    authViewModel.logout()
+                    navController.navigate(Screen.Login.route) {
+                        popUpTo(Screen.Home.route) { inclusive = true }
+                    }
+                }
+            )
+        }
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(PrimaryBlue)  // Pintamos la parte superior de azul
+                .padding(paddingValues)
+        ) {
+            // ===== SECCIÓN SUPERIOR (FONDO AZUL + FLECHA DE REGRESO) =====
             Box(
-                modifier = Modifier.fillMaxWidth().background(PrimaryBlue).padding(16.dp),
-                contentAlignment = Alignment.Center
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(PrimaryBlue)
+                    .padding(16.dp)
             ) {
+                // Flecha para regresar
+                IconButton(
+                    modifier = Modifier.align(Alignment.CenterStart),
+                    onClick = { navController.popBackStack() }
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.ArrowBack,
+                        contentDescription = "Back",
+                        tint = PureWhite
+                    )
+                }
+
                 Text(
                     text = "Add Expense",
-                    style = MaterialTheme.typography.headlineLarge.copy(color = PureWhite)
+                    style = MaterialTheme.typography.headlineLarge.copy(color = PureWhite),
+                    modifier = Modifier.align(Alignment.Center)
                 )
             }
 
@@ -63,6 +101,7 @@ fun CreateExpenseScreen(
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxWidth()
+                    .clip(RoundedCornerShape(topStart = 40.dp, topEnd = 40.dp))
                     .background(LightGreenishWhite)
                     .padding(16.dp)
             ) {
@@ -157,6 +196,7 @@ fun CreateExpenseScreen(
                                 )
                                 transactionViewModel.createTransaction(transaction, userToken)
                                 Toast.makeText(context, "Transaction Created!", Toast.LENGTH_SHORT).show()
+                                // Regresa a la pantalla anterior
                                 navController.popBackStack()
                             } else {
                                 Toast.makeText(context, "Please fill all fields", Toast.LENGTH_SHORT).show()
@@ -172,22 +212,5 @@ fun CreateExpenseScreen(
                 }
             }
         }
-
-        BottomNavBar(
-            onHomeClick = { navController.navigate(Screen.Home.route) },
-            onAddExpenseClick = { navController.navigate(Screen.AddExpense.route) },
-            onProfileClick = {
-                authViewModel.logout()
-                navController.navigate(Screen.Login.route) {
-                    popUpTo(Screen.Home.route) { inclusive = true }
-                }
-            }
-        )
     }
 }
-
-
-
-
-
-
