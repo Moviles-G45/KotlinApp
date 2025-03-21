@@ -110,7 +110,7 @@ fun BottomNavBar(
                         )
                     }
                     Icon(
-                        painter = painterResource(id = R.drawable.profile),
+                        painter = painterResource(id = R.drawable.map),
                         contentDescription = "Profile Icon",
                         modifier = Modifier.size(24.dp)
                     )
