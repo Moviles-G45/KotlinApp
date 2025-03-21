@@ -14,6 +14,12 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import retrofit2.Response
+
+
 sealed class AuthState {
     object Idle : AuthState()  // Estado inicial
     object Loading : AuthState()
@@ -111,4 +117,25 @@ class AuthViewModel(
             }
         }
     }
+
+    fun recoverPassword(email: String, onResult: (Result<String>) -> Unit) {
+        viewModelScope.launch {
+            try {
+                val response: Response<AuthResponse> = repository.recoverPassword(email)
+
+                if (response.isSuccessful) {
+                    onResult(Result.success("Email de recuperación enviado"))
+                } else {
+                    val errorMessage = response.errorBody()?.string() ?: "Error desconocido"
+                    onResult(Result.failure(Exception(errorMessage)))
+                }
+            } catch (e: Exception) {
+                onResult(Result.failure(e))
+            }
+        }
+    }
+
+
+
+
 }
