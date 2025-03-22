@@ -29,8 +29,6 @@ import com.example.budgetbuddy.navigation.Screen
 import com.example.budgetbuddy.viewmodel.AuthViewModel
 import com.example.budgetbuddy.viewmodel.AuthState
 
-
-
 @Composable
 fun SignUpScreen(navController: NavController, authViewModel: AuthViewModel) {
     var fullName by remember { mutableStateOf("") }
@@ -49,16 +47,15 @@ fun SignUpScreen(navController: NavController, authViewModel: AuthViewModel) {
             .fillMaxSize()
             .navigationBarsPadding(),
     ) {
-        // 🔵 Fondo azul oscuro en la parte superior
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(170.dp)
                 .background(Color(0xFF4682B4)),
-            contentAlignment = Alignment.Center // 🔹 Centra el texto dentro del fondo azul
+            contentAlignment = Alignment.Center
         ) {
             Text(
-                text = "Create Account", // 🔥 Ahora se muestra bien en la parte superior
+                text = "Create Account",
                 fontSize = 30.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.White,
@@ -66,8 +63,6 @@ fun SignUpScreen(navController: NavController, authViewModel: AuthViewModel) {
             )
         }
 
-
-        // 🔳 Sección clara con esquinas redondeadas
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -77,26 +72,32 @@ fun SignUpScreen(navController: NavController, authViewModel: AuthViewModel) {
                     shape = RoundedCornerShape(topStart = 50.dp, topEnd = 50.dp)
                 )
                 .padding(horizontal = 16.dp)
-                .verticalScroll(scrollState) // 🔹 Habilitar scroll
+                .verticalScroll(scrollState)
                 .navigationBarsPadding(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Spacer(modifier = Modifier.height(50.dp))
 
-            // 📝 Campos del formulario
             CustomTextField(
                 label = "Full Name",
                 value = fullName,
-                onValueChange = { fullName = it })
-            CustomTextField(label = "Email", value = email, onValueChange = { email = it })
+                onValueChange = { fullName = it }
+            )
+            CustomTextField(
+                label = "Email",
+                value = email,
+                onValueChange = { email = it }
+            )
             CustomTextField(
                 label = "Mobile Number",
                 value = mobileNumber,
-                onValueChange = { mobileNumber = it })
+                onValueChange = { mobileNumber = it }
+            )
             FechaTextField(
                 label = "Date Of Birth",
                 value = dateOfBirth,
-                onValueChange = { dateOfBirth = it })
+                onValueChange = { dateOfBirth = it }
+            )
 
             PasswordTextField(
                 label = "Password",
@@ -116,7 +117,6 @@ fun SignUpScreen(navController: NavController, authViewModel: AuthViewModel) {
 
             Spacer(modifier = Modifier.height(10.dp))
 
-            // 📌 Texto de términos y condiciones
             Text(
                 text = "By continuing, you agree to Terms of Use and Privacy Policy.",
                 fontSize = 12.sp,
@@ -126,7 +126,6 @@ fun SignUpScreen(navController: NavController, authViewModel: AuthViewModel) {
 
             Spacer(modifier = Modifier.height(10.dp))
 
-            // 🔹 Botón "Sign Up"
             Button(
                 onClick = {
                     val user = UserRequest(fullName, email, password, dateOfBirth, mobileNumber)
@@ -149,18 +148,15 @@ fun SignUpScreen(navController: NavController, authViewModel: AuthViewModel) {
                         popUpTo(Screen.SignUp.route) { inclusive = true }
                     }
                 }
-
                 is AuthState.Error -> Text(
                     "Error: ${(authState as AuthState.Error).message}",
                     color = MaterialTheme.colorScheme.error
                 )
-
                 else -> {}
             }
 
             Spacer(modifier = Modifier.height(10.dp))
 
-            // 🔹 Texto "Already have an account? Log In"
             Row {
                 Text(text = "Already have an account?", fontSize = 14.sp, color = Color.Gray)
                 Spacer(modifier = Modifier.width(4.dp))
@@ -180,16 +176,19 @@ fun SignUpScreen(navController: NavController, authViewModel: AuthViewModel) {
     }
 }
 
-
-// 🔹 Función reutilizable para TextFields normales
 @Composable
 fun CustomTextField(label: String, value: String, onValueChange: (String) -> Unit) {
+    val placeholderText = when (label) {
+        "Full Name" -> "John Doe"
+        "Mobile Number" -> "123-456-7890"
+        else -> "example@example.com"
+    }
     Column(modifier = Modifier.padding(horizontal = 20.dp)) {
         Text(text = label, fontSize = 14.sp, color = Color.Black, fontWeight = FontWeight.Medium)
         OutlinedTextField(
             value = value,
             onValueChange = onValueChange,
-            placeholder = { Text("example@example.com", color = Color.Gray) },
+            placeholder = { Text(placeholderText, color = Color.Gray) },
             shape = RoundedCornerShape(25.dp),
             colors = TextFieldDefaults.colors(
                 focusedTextColor = Color.Black,
@@ -203,11 +202,11 @@ fun CustomTextField(label: String, value: String, onValueChange: (String) -> Uni
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(vertical = 6.dp)
-                .height(55.dp),
-
-            )
+                .height(55.dp)
+        )
     }
 }
+
 @Composable
 fun FechaTextField(label: String, value: String, onValueChange: (String) -> Unit) {
     Column(modifier = Modifier.padding(horizontal = 20.dp)) {
@@ -229,12 +228,11 @@ fun FechaTextField(label: String, value: String, onValueChange: (String) -> Unit
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(vertical = 6.dp)
-                .height(55.dp),
-
-            )
+                .height(55.dp)
+        )
     }
 }
-// 🔹 Función para campos de contraseña
+
 @Composable
 fun PasswordTextField(
     label: String,
@@ -271,9 +269,7 @@ fun PasswordTextField(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(vertical = 6.dp)
-                .height(50.dp),
-
-            )
-
+                .height(50.dp)
+        )
     }
 }

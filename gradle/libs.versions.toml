@@ -19,6 +19,7 @@ androidx-work = "2.8.1"
 androidx-core = "1.12.0"
 lifecycleViewModel = "2.6.1"
 playServicesLocation = "21.3.0"
+workRuntimeKtx = "2.10.0"
 
 
 
@@ -49,6 +50,7 @@ firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "fir
 play-services-location = { group = "com.google.android.gms", name = "play-services-location", version.ref = "playServicesLocation" }
 work-runtime-ktx = { module = "androidx.work:work-runtime-ktx", version.ref = "androidx-work" }
 core-ktx = { module = "androidx.core:core-ktx", version.ref = "androidx-core" }
+androidx-work-runtime-ktx = { group = "androidx.work", name = "work-runtime-ktx", version.ref = "workRuntimeKtx" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

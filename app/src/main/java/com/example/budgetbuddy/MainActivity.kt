@@ -19,6 +19,7 @@ import com.example.budgetbuddy.viewmodel.AuthViewModel
 import com.example.budgetbuddy.repository.AuthRepository
 import com.example.budgetbuddy.services.AuthService
 import com.example.budgetbuddy.services.NotificationWorker
+import com.example.budgetbuddy.workers.MonthlyReportWorker
 import java.util.Calendar
 import java.util.concurrent.TimeUnit
 
@@ -31,6 +32,7 @@ class MainActivity : ComponentActivity() {
 
         checkAndRequestPermissions() // ✅ Ahora incluye permisos de notificación
         scheduleWeeklyNotification() // ✅ Programamos la notificación cada viernes a las 2:46 PM
+        scheduleMonthlyReport()
 
         setContent {
             val authService = ApiClient.createService(AuthService::class.java)
@@ -112,5 +114,31 @@ class MainActivity : ComponentActivity() {
                 Toast.makeText(this, "Permisos denegados", Toast.LENGTH_SHORT).show()
             }
         }
+    }
+
+    private fun scheduleMonthlyReport() {
+        val currentDate = Calendar.getInstance()
+        val dueDate = Calendar.getInstance()
+
+        // Configurar dueDate para el primer día del mes siguiente a las 00:00 horas
+        dueDate.set(Calendar.DAY_OF_MONTH, 1)
+        dueDate.set(Calendar.HOUR_OF_DAY, 0)
+        dueDate.set(Calendar.MINUTE, 0)
+        dueDate.set(Calendar.SECOND, 0)
+        dueDate.set(Calendar.MILLISECOND, 0)
+
+        if (dueDate.before(currentDate)) {
+            dueDate.add(Calendar.MONTH, 1)
+        }
+
+        val initialDelay = dueDate.timeInMillis - currentDate.timeInMillis
+
+        // Configurar el trabajo periódico (aproximadamente cada 30 días)
+        val workRequest = PeriodicWorkRequestBuilder<MonthlyReportWorker>(30L, TimeUnit.DAYS)
+            .setInitialDelay(initialDelay, TimeUnit.MILLISECONDS)
+            .build()
+
+        WorkManager.getInstance(applicationContext)
+            .enqueueUniquePeriodicWork("MonthlyReport", ExistingPeriodicWorkPolicy.REPLACE, workRequest)
     }
 }

@@ -67,7 +67,8 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.play.services.location) // Para ViewModel en Compose
     implementation(libs.work.runtime.ktx) // WorkManager
-    implementation(libs.core.ktx) // Para notificaciones    testImplementation(libs.junit)
+    implementation(libs.core.ktx)
+    implementation(libs.androidx.work.runtime.ktx) // Para notificaciones    testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
