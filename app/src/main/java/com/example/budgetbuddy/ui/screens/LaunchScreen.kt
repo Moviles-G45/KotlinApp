@@ -25,53 +25,50 @@ fun LaunchScreen(navController: NavController) {
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // 🐷 Logo
         Image(
-            painter = painterResource(id = R.drawable.logo), // Asegúrate de tener este recurso en res/drawable
+            painter = painterResource(id = R.drawable.logo),
             contentDescription = "BudgetBuddy Logo",
             modifier = Modifier.size(400.dp)
 
         )
 
-        // ✍️ Subtítulo
         Text(
             text = "Spend wisely, save effortlessly.",
             fontSize = 20.sp,
             textAlign = TextAlign.Center,
             color = Color.Black,
             modifier = Modifier
-                .offset(y = -50.dp) // 🔥 Mueve el texto arriba
-                .width(250.dp) // 🔥 Establece un ancho fijo más reducido
+                .offset(y = -50.dp)
+                .width(250.dp)
 
             )
 
-        // 🔹 Botón de "Log In"
+        // Botón de "Log In"
         Button(
             onClick = { navController.navigate(Screen.Login.route) },
             modifier = Modifier
                 .width(200.dp)
                 .height(50.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2D5C88)), // 🔵 Cambia a azul
+            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2D5C88)), // Cambia a azul
 
-            shape = CircleShape, // 🔹 Hace que el botón sea circular
+            shape = CircleShape, // Hace que el botón sea circular
         ) {
             Text(text = "Log In", fontSize = 16.sp, color = Color.White)
         }
-        Spacer(modifier = Modifier.height(12.dp)) // Ajusta la altura según necesites
+        Spacer(modifier = Modifier.height(12.dp))
 
-        // 🔹 Botón de "Sign Up"
+        // Botón de "Sign Up"
         Button(
             onClick = { navController.navigate(Screen.SignUp.route) },
             modifier = Modifier
                 .width(200.dp)
                 .height(50.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF5C8CA8)), // 🔵 Azul más claro
-            shape = CircleShape, // 🔹 Hace que el botón sea circular
+            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF5C8CA8)),
+            shape = CircleShape,
         ) {
             Text(text = "Sign Up", fontSize = 16.sp, color = Color.White)
         }
 
-        // 🔹 Texto de "Forgot Password?"
         TextButton(onClick = { navController.navigate(Screen.ForgotPassword.route) }) {
             Text(
                 text = "Forgot Password?",
