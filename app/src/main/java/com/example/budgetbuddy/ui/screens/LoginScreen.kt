@@ -22,10 +22,12 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.budgetbuddy.R
 import com.example.budgetbuddy.navigation.Screen
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.OutlinedTextField
+import com.example.budgetbuddy.ui.components.PasswordTextField
 import com.example.budgetbuddy.viewmodel.AuthState
 import com.example.budgetbuddy.viewmodel.AuthViewModel
 
@@ -43,10 +45,10 @@ fun LoginScreen(navController: NavController, authViewModel: AuthViewModel) {
                 .fillMaxWidth()
                 .height(220.dp)
                 .background(Color(0xFF4682B4)),
-            contentAlignment = Alignment.Center
+            contentAlignment = Alignment.Center //Centra el texto dentro del fondo azul
         ) {
             Text(
-                text = "Welcome",
+                text = "Welcome", //Ahora se muestra bien en la parte superior
                 fontSize = 30.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.White,
@@ -63,22 +65,22 @@ fun LoginScreen(navController: NavController, authViewModel: AuthViewModel) {
                     shape = RoundedCornerShape(topStart = 50.dp, topEnd = 50.dp)
                 )
                 .padding(horizontal = 16.dp)
-                .verticalScroll(scrollState),
+                .verticalScroll(scrollState), // Habilitar scroll
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Spacer(modifier = Modifier.height(50.dp))
             TextFieldWithLabel(label = "Email", value = email, onValueChange = { email = it })
-            TextFieldWithLabel(
+            PasswordTextField(
                 label = "Password",
-                value = password,
-                onValueChange = { password = it },
-                isPassword = true,
+                password = password,
+                onPasswordChange = { password = it },
                 passwordVisible = passwordVisible,
-                onTogglePasswordVisibility = { passwordVisible = !passwordVisible }
+                onToggleVisibility = { passwordVisible = !passwordVisible }
             )
 
             Spacer(modifier = Modifier.height(30.dp))
 
+            // 🔵 Botón "Log In"
             Button(
                 onClick = { authViewModel.login(email, password) },
                 modifier = Modifier
@@ -90,6 +92,7 @@ fun LoginScreen(navController: NavController, authViewModel: AuthViewModel) {
                 Text(text = "Log In", fontSize = 16.sp)
             }
 
+            // Mostrar estados de autenticación
             when (authState) {
                 is AuthState.Loading -> CircularProgressIndicator(color = Color.Blue)
                 is AuthState.Success -> {
@@ -126,23 +129,20 @@ fun LoginScreen(navController: NavController, authViewModel: AuthViewModel) {
 
             Spacer(modifier = Modifier.height(20.dp))
 
+            // Sign Up Link
             Row {
                 Text(text = "Don't have an account?", fontSize = 14.sp, color = Color.Gray)
                 Spacer(modifier = Modifier.width(4.dp))
-                Text(
-                    text = "Sign Up",
-                    fontSize = 14.sp,
-                    color = Color.Blue,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.clickable {
-                        navController.navigate(Screen.SignUp.route)
-                    }
-                )
+                Text(text = "Sign Up", fontSize = 14.sp, color = Color.Blue, fontWeight = FontWeight.Bold, modifier = Modifier.clickable {
+                    navController.navigate(Screen.SignUp.route)
+                })
             }
         }
     }
 }
 
+
+// Función reutilizable para TextFields
 @Composable
 fun TextFieldWithLabel(
     label: String,
@@ -152,14 +152,14 @@ fun TextFieldWithLabel(
     passwordVisible: Boolean = false,
     onTogglePasswordVisibility: () -> Unit = {}
 ) {
-    val placeholderText = if (isPassword) "********" else "example@example.com"
     Column(modifier = Modifier.padding(horizontal = 20.dp)) {
         Text(text = label, fontSize = 14.sp, color = Color.Black, fontWeight = FontWeight.Medium)
+
         OutlinedTextField(
             value = value,
             onValueChange = onValueChange,
-            placeholder = { Text(placeholderText, color = Color.Gray) },
-            shape = RoundedCornerShape(25.dp),
+            placeholder = { Text("example@example.com", color = Color.Gray) }, // Color del placeholder
+            shape = RoundedCornerShape(25.dp), // Hace que el campo tenga bordes redondeados
             colors = TextFieldDefaults.colors(
                 focusedTextColor = Color.Black,
                 unfocusedTextColor = Color.Black,
@@ -186,7 +186,7 @@ fun TextFieldWithLabel(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(vertical = 8.dp)
-                .height(55.dp)
+                .height(55.dp),
         )
     }
 }

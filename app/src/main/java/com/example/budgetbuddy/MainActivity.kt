@@ -53,7 +53,7 @@ class MainActivity : ComponentActivity() {
         val calendar = Calendar.getInstance().apply {
             set(Calendar.DAY_OF_WEEK, Calendar.FRIDAY) // Viernes
             set(Calendar.HOUR_OF_DAY, 15) //(Formato 24h)
-            set(Calendar.MINUTE, 3) // (Minutos)
+            set(Calendar.MINUTE, 36) // (Minutos)
             set(Calendar.SECOND, 0)
         }
 

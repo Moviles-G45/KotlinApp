@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Visibility
@@ -17,6 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
@@ -26,8 +28,11 @@ import androidx.navigation.NavController
 import com.example.budgetbuddy.R
 import com.example.budgetbuddy.model.UserRequest
 import com.example.budgetbuddy.navigation.Screen
+import com.example.budgetbuddy.ui.components.PasswordTextField
 import com.example.budgetbuddy.viewmodel.AuthViewModel
 import com.example.budgetbuddy.viewmodel.AuthState
+
+
 
 @Composable
 fun SignUpScreen(navController: NavController, authViewModel: AuthViewModel) {
@@ -47,12 +52,13 @@ fun SignUpScreen(navController: NavController, authViewModel: AuthViewModel) {
             .fillMaxSize()
             .navigationBarsPadding(),
     ) {
+        // Fondo azul oscuro en la parte superior
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(170.dp)
                 .background(Color(0xFF4682B4)),
-            contentAlignment = Alignment.Center
+            contentAlignment = Alignment.Center // Centra el texto dentro del fondo azul
         ) {
             Text(
                 text = "Create Account",
@@ -72,32 +78,28 @@ fun SignUpScreen(navController: NavController, authViewModel: AuthViewModel) {
                     shape = RoundedCornerShape(topStart = 50.dp, topEnd = 50.dp)
                 )
                 .padding(horizontal = 16.dp)
-                .verticalScroll(scrollState)
+                .verticalScroll(scrollState) // 🔹 Habilitar scroll
                 .navigationBarsPadding(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Spacer(modifier = Modifier.height(50.dp))
 
+            // 📝 Campos del formulario
             CustomTextField(
                 label = "Full Name",
                 value = fullName,
-                onValueChange = { fullName = it }
-            )
-            CustomTextField(
-                label = "Email",
-                value = email,
-                onValueChange = { email = it }
-            )
-            CustomTextField(
-                label = "Mobile Number",
+                onValueChange = { fullName = it })
+            CustomTextField(label = "Email", value = email, onValueChange = { email = it })
+
+            MobileNumberTextField(
+                label = "Número de Móvil",
                 value = mobileNumber,
-                onValueChange = { mobileNumber = it }
-            )
+                onValueChange = { mobileNumber = it })
+
             FechaTextField(
                 label = "Date Of Birth",
                 value = dateOfBirth,
-                onValueChange = { dateOfBirth = it }
-            )
+                onValueChange = { dateOfBirth = it })
 
             PasswordTextField(
                 label = "Password",
@@ -117,6 +119,7 @@ fun SignUpScreen(navController: NavController, authViewModel: AuthViewModel) {
 
             Spacer(modifier = Modifier.height(10.dp))
 
+            // Texto de términos y condiciones
             Text(
                 text = "By continuing, you agree to Terms of Use and Privacy Policy.",
                 fontSize = 12.sp,
@@ -126,6 +129,7 @@ fun SignUpScreen(navController: NavController, authViewModel: AuthViewModel) {
 
             Spacer(modifier = Modifier.height(10.dp))
 
+            // 🔹 Botón "Sign Up"
             Button(
                 onClick = {
                     val user = UserRequest(fullName, email, password, dateOfBirth, mobileNumber)
@@ -148,15 +152,18 @@ fun SignUpScreen(navController: NavController, authViewModel: AuthViewModel) {
                         popUpTo(Screen.SignUp.route) { inclusive = true }
                     }
                 }
+
                 is AuthState.Error -> Text(
                     "Error: ${(authState as AuthState.Error).message}",
                     color = MaterialTheme.colorScheme.error
                 )
+
                 else -> {}
             }
 
             Spacer(modifier = Modifier.height(10.dp))
 
+            // 🔹 Texto "Already have an account? Log In"
             Row {
                 Text(text = "Already have an account?", fontSize = 14.sp, color = Color.Gray)
                 Spacer(modifier = Modifier.width(4.dp))
@@ -176,19 +183,16 @@ fun SignUpScreen(navController: NavController, authViewModel: AuthViewModel) {
     }
 }
 
+
+// 🔹 Función reutilizable para TextFields normales
 @Composable
 fun CustomTextField(label: String, value: String, onValueChange: (String) -> Unit) {
-    val placeholderText = when (label) {
-        "Full Name" -> "John Doe"
-        "Mobile Number" -> "123-456-7890"
-        else -> "example@example.com"
-    }
     Column(modifier = Modifier.padding(horizontal = 20.dp)) {
         Text(text = label, fontSize = 14.sp, color = Color.Black, fontWeight = FontWeight.Medium)
         OutlinedTextField(
             value = value,
             onValueChange = onValueChange,
-            placeholder = { Text(placeholderText, color = Color.Gray) },
+            placeholder = { Text("example@example.com", color = Color.Gray) },
             shape = RoundedCornerShape(25.dp),
             colors = TextFieldDefaults.colors(
                 focusedTextColor = Color.Black,
@@ -202,11 +206,11 @@ fun CustomTextField(label: String, value: String, onValueChange: (String) -> Uni
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(vertical = 6.dp)
-                .height(55.dp)
-        )
+                .height(55.dp),
+
+            )
     }
 }
-
 @Composable
 fun FechaTextField(label: String, value: String, onValueChange: (String) -> Unit) {
     Column(modifier = Modifier.padding(horizontal = 20.dp)) {
@@ -228,26 +232,30 @@ fun FechaTextField(label: String, value: String, onValueChange: (String) -> Unit
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(vertical = 6.dp)
-                .height(55.dp)
-        )
+                .height(55.dp),
+
+            )
     }
 }
-
 @Composable
-fun PasswordTextField(
+fun MobileNumberTextField(
     label: String,
-    password: String,
-    onPasswordChange: (String) -> Unit,
-    passwordVisible: Boolean,
-    onToggleVisibility: () -> Unit
+    value: String,
+    onValueChange: (String) -> Unit
 ) {
     Column(modifier = Modifier.padding(horizontal = 20.dp)) {
-        Text(text = label, fontSize = 14.sp, color = Color.Black, fontWeight = FontWeight.Medium)
+        Text(
+            text = label,
+            fontSize = 14.sp,
+            color = Color.Black,
+            fontWeight = FontWeight.Medium
+        )
         OutlinedTextField(
-            value = password,
-            onValueChange = onPasswordChange,
-            placeholder = { Text("********", color = Color.Gray) },
+            value = value,
+            onValueChange = onValueChange,
+            placeholder = { Text("Ej: 3113447798", color = Color.Gray) },
             shape = RoundedCornerShape(25.dp),
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
             colors = TextFieldDefaults.colors(
                 focusedTextColor = Color.Black,
                 unfocusedTextColor = Color.Black,
@@ -257,19 +265,13 @@ fun PasswordTextField(
                 unfocusedIndicatorColor = Color.LightGray,
                 cursorColor = Color.Black
             ),
-            visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-            trailingIcon = {
-                IconButton(onClick = onToggleVisibility) {
-                    Icon(
-                        imageVector = if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
-                        contentDescription = "Toggle Password"
-                    )
-                }
-            },
+
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(vertical = 6.dp)
-                .height(50.dp)
+                .height(55.dp)
         )
     }
 }
+
+

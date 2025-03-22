@@ -18,13 +18,13 @@ interface AuthService {
     suspend fun signup(@Body user: UserRequest): Response<AuthResponse>
 
     @POST("/auth/recover")
-    suspend fun recoverPassword(@Query("email") email: String): Response<AuthResponse> // ✅ Ahora se envía como query param
+    suspend fun recoverPassword(@Query("email") email: String): Response<AuthResponse>
 
     @POST("/auth/reset")
     suspend fun resetPassword(@Body resetData: Map<String, String>): Response<AuthResponse>
 
     @POST("/auth/logout")
-    suspend fun logout(@Header("Authorization") token: String): Response<AuthResponse> // Mantiene el token en header
+    suspend fun logout(@Header("Authorization") token: String): Response<AuthResponse>
 
     @GET("/auth/me")
     suspend fun getCurrentUser(@Header("Authorization") token: String): Response<AuthResponse>
