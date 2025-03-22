@@ -51,13 +51,17 @@ class AuthViewModel(
     fun signup(user: UserRequest) {
         _authState.value = AuthState.Loading
         viewModelScope.launch {
-            val result = repository.signup(user)
-            _authState.value = result.fold(
-                onSuccess = { AuthState.Success(it) },
-                onFailure = { AuthState.Error(it.message ?: "Error desconocido") }
+            repository.signup(user).fold(
+                onSuccess = {
+                    login(user.email, user.password)
+                },
+                onFailure = {
+                    _authState.value = AuthState.Error(it.message ?: "Error desconocido")
+                }
             )
         }
     }
+
 
     // 🔹 LOGIN
     fun login(email: String, password: String) {
