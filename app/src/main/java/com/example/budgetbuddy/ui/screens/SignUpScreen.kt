@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Visibility
@@ -17,6 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
@@ -26,6 +28,7 @@ import androidx.navigation.NavController
 import com.example.budgetbuddy.R
 import com.example.budgetbuddy.model.UserRequest
 import com.example.budgetbuddy.navigation.Screen
+import com.example.budgetbuddy.ui.components.PasswordTextField
 import com.example.budgetbuddy.viewmodel.AuthViewModel
 import com.example.budgetbuddy.viewmodel.AuthState
 
@@ -49,16 +52,16 @@ fun SignUpScreen(navController: NavController, authViewModel: AuthViewModel) {
             .fillMaxSize()
             .navigationBarsPadding(),
     ) {
-        // 🔵 Fondo azul oscuro en la parte superior
+        // Fondo azul oscuro en la parte superior
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(170.dp)
                 .background(Color(0xFF4682B4)),
-            contentAlignment = Alignment.Center // 🔹 Centra el texto dentro del fondo azul
+            contentAlignment = Alignment.Center // Centra el texto dentro del fondo azul
         ) {
             Text(
-                text = "Create Account", // 🔥 Ahora se muestra bien en la parte superior
+                text = "Create Account",
                 fontSize = 30.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.White,
@@ -66,8 +69,6 @@ fun SignUpScreen(navController: NavController, authViewModel: AuthViewModel) {
             )
         }
 
-
-        // 🔳 Sección clara con esquinas redondeadas
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -89,10 +90,12 @@ fun SignUpScreen(navController: NavController, authViewModel: AuthViewModel) {
                 value = fullName,
                 onValueChange = { fullName = it })
             CustomTextField(label = "Email", value = email, onValueChange = { email = it })
-            CustomTextField(
-                label = "Mobile Number",
+
+            MobileNumberTextField(
+                label = "Número de Móvil",
                 value = mobileNumber,
                 onValueChange = { mobileNumber = it })
+
             FechaTextField(
                 label = "Date Of Birth",
                 value = dateOfBirth,
@@ -116,7 +119,7 @@ fun SignUpScreen(navController: NavController, authViewModel: AuthViewModel) {
 
             Spacer(modifier = Modifier.height(10.dp))
 
-            // 📌 Texto de términos y condiciones
+            // Texto de términos y condiciones
             Text(
                 text = "By continuing, you agree to Terms of Use and Privacy Policy.",
                 fontSize = 12.sp,
@@ -234,22 +237,25 @@ fun FechaTextField(label: String, value: String, onValueChange: (String) -> Unit
             )
     }
 }
-// 🔹 Función para campos de contraseña
 @Composable
-fun PasswordTextField(
+fun MobileNumberTextField(
     label: String,
-    password: String,
-    onPasswordChange: (String) -> Unit,
-    passwordVisible: Boolean,
-    onToggleVisibility: () -> Unit
+    value: String,
+    onValueChange: (String) -> Unit
 ) {
     Column(modifier = Modifier.padding(horizontal = 20.dp)) {
-        Text(text = label, fontSize = 14.sp, color = Color.Black, fontWeight = FontWeight.Medium)
+        Text(
+            text = label,
+            fontSize = 14.sp,
+            color = Color.Black,
+            fontWeight = FontWeight.Medium
+        )
         OutlinedTextField(
-            value = password,
-            onValueChange = onPasswordChange,
-            placeholder = { Text("********", color = Color.Gray) },
+            value = value,
+            onValueChange = onValueChange,
+            placeholder = { Text("Ej: 3113447798", color = Color.Gray) },
             shape = RoundedCornerShape(25.dp),
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
             colors = TextFieldDefaults.colors(
                 focusedTextColor = Color.Black,
                 unfocusedTextColor = Color.Black,
@@ -259,21 +265,13 @@ fun PasswordTextField(
                 unfocusedIndicatorColor = Color.LightGray,
                 cursorColor = Color.Black
             ),
-            visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-            trailingIcon = {
-                IconButton(onClick = onToggleVisibility) {
-                    Icon(
-                        imageVector = if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
-                        contentDescription = "Toggle Password"
-                    )
-                }
-            },
+
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(vertical = 6.dp)
-                .height(50.dp),
-
-            )
-
+                .height(55.dp)
+        )
     }
 }
+
+

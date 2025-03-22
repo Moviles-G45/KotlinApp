@@ -63,9 +63,16 @@ class AuthViewModel(
     }
 
 
-    // 🔹 LOGIN
+    // LOGIN
     fun login(email: String, password: String) {
-        _authState.value = AuthState.Loading // ⏳ Mostrar loading
+
+        // Validación de campos vacíos
+        if (email.isBlank() || password.isBlank()) {
+            _authState.value = AuthState.Error("Los campos no pueden estar vacíos")
+            return
+        }
+
+        _authState.value = AuthState.Loading // Mostrar loading
         Firebase.auth.signInWithEmailAndPassword(email, password)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
@@ -92,11 +99,11 @@ class AuthViewModel(
     private fun sendTokenToBackend(idToken: String) {
         viewModelScope.launch {
             try {
-                val result = repository.login(UserLogin(idToken)) // 🔹 `result` es un Result<AuthResponse>
+                val result = repository.login(UserLogin(idToken)) // `result` es un Result<AuthResponse>
 
                 _authState.value = result.fold(
-                    onSuccess = { AuthState.Success(it) }, // ✅ Extraemos el valor si es éxito
-                    onFailure = { AuthState.Error(it.localizedMessage ?: "Login failed") } // ❌ Manejo de error
+                    onSuccess = { AuthState.Success(it) }, // Extraemos el valor si es éxito
+                    onFailure = { AuthState.Error(it.localizedMessage ?: "Login failed") } //  Manejo de error
                 )
             } catch (e: Exception) {
                 _authState.value = AuthState.Error(e.localizedMessage ?: "Login failed")
@@ -111,11 +118,11 @@ class AuthViewModel(
     // LOGOUT
     fun logout() {
         viewModelScope.launch {
-            _authState.value = AuthState.Loading // ⏳ Indicar que se está cerrando sesión
+            _authState.value = AuthState.Loading //  Indicar que se está cerrando sesión
             try {
-                Firebase.auth.signOut() // 🔥 Cierra sesión en Firebase
+                Firebase.auth.signOut() // Cierra sesión en Firebase
                 sessionManager.clearToken()
-                _authState.value = AuthState.Unauthenticated // 🚪 Usuario desautenticado
+                _authState.value = AuthState.Unauthenticated // Usuario desautenticado
             } catch (e: Exception) {
                 _authState.value = AuthState.Error(e.message ?: "Error en logout")
             }
