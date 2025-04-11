@@ -47,7 +47,7 @@ class AuthViewModel(
         }
     }
 
-    // 🔹 SIGN UP
+    //  SIGN UP
     fun signup(user: UserRequest) {
         _authState.value = AuthState.Loading
         viewModelScope.launch {
