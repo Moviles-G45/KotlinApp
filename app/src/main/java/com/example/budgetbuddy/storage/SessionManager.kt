@@ -11,7 +11,6 @@ class SessionManager(context: Context) {
         private const val KEY_TOKEN = "firebase_token"
     }
 
-
     private val sharedPreferences = EncryptedSharedPreferences.create(
         context,
         PREFS_FILENAME,
