@@ -28,6 +28,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.OutlinedTextField
 import com.example.budgetbuddy.ui.components.PasswordTextField
+import com.example.budgetbuddy.utils.LoginFormState
+import com.example.budgetbuddy.utils.ValidationUtils
 import com.example.budgetbuddy.viewmodel.AuthState
 import com.example.budgetbuddy.viewmodel.AuthViewModel
 
@@ -38,6 +40,8 @@ fun LoginScreen(navController: NavController, authViewModel: AuthViewModel) {
     var passwordVisible by remember { mutableStateOf(false) }
     val scrollState = rememberScrollState()
     val authState by authViewModel.authState.collectAsState()
+    var formState by remember { mutableStateOf(LoginFormState()) }
+    val isLoading = authState is AuthState.Loading
 
     Box(modifier = Modifier.fillMaxSize()) {
         Box(
@@ -69,27 +73,39 @@ fun LoginScreen(navController: NavController, authViewModel: AuthViewModel) {
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Spacer(modifier = Modifier.height(50.dp))
-            TextFieldWithLabel(label = "Email", value = email, onValueChange = { email = it })
+
+            TextFieldWithLabel(label = "Email", value = email, onValueChange = { if (it.length <= 40) email = it })
+            formState.emailError?.let {
+                Text(text = it, color = Color.Red, fontSize = 12.sp)
+            }
             PasswordTextField(
                 label = "Password",
                 password = password,
-                onPasswordChange = { password = it },
+                onPasswordChange = { if (it.length <= 30) password = it  },
                 passwordVisible = passwordVisible,
                 onToggleVisibility = { passwordVisible = !passwordVisible }
             )
-
+            formState.passwordError?.let {
+                Text(text = it, color = Color.Red, fontSize = 12.sp)
+            }
             Spacer(modifier = Modifier.height(30.dp))
 
             // 🔵 Botón "Log In"
             Button(
-                onClick = { authViewModel.login(email, password) },
+                onClick = {
+                    formState = authViewModel.validateLoginForm(email, password)
+
+                    if (!formState.hasError) {
+                        authViewModel.login(email, password)
+                    }
+                },
                 modifier = Modifier
                     .width(200.dp)
                     .height(45.dp),
                 shape = CircleShape,
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4682B4))
             ) {
-                Text(text = "Log In", fontSize = 16.sp)
+                Text(text = if (!isLoading) "Log In" else "Loading...", fontSize = 16.sp, color = Color.White)
             }
 
             // Mostrar estados de autenticación
@@ -160,6 +176,8 @@ fun TextFieldWithLabel(
             onValueChange = onValueChange,
             placeholder = { Text("example@example.com", color = Color.Gray) }, // Color del placeholder
             shape = RoundedCornerShape(25.dp), // Hace que el campo tenga bordes redondeados
+            maxLines = 1,
+            singleLine = true,
             colors = TextFieldDefaults.colors(
                 focusedTextColor = Color.Black,
                 unfocusedTextColor = Color.Black,

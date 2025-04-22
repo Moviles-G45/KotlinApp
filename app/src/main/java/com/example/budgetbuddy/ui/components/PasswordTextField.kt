@@ -36,6 +36,8 @@ fun PasswordTextField(
             value = password,
             onValueChange = onPasswordChange,
             placeholder = { Text("********", color = Color.Gray) },
+            maxLines = 1,
+            singleLine = true,
             shape = RoundedCornerShape(25.dp),
             colors = TextFieldDefaults.colors(
                 focusedTextColor = Color.Black,

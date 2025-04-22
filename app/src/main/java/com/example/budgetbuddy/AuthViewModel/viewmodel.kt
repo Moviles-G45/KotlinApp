@@ -1,6 +1,8 @@
 package com.example.budgetbuddy.viewmodel
 
 import android.content.Context
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.budgetbuddy.model.AuthResponse
@@ -17,6 +19,9 @@ import kotlinx.coroutines.launch
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import com.example.budgetbuddy.utils.LoginFormState
+import com.example.budgetbuddy.utils.SignUpFormState
+import com.example.budgetbuddy.utils.ValidationUtils
 import retrofit2.Response
 
 
@@ -146,6 +151,37 @@ class AuthViewModel(
         }
     }
 
+
+    fun setError(message: String) {
+        _authState.value = AuthState.Error(message)
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun validateSignUpForm(
+        fullName: String,
+        email: String,
+        mobile: String,
+        dob: String,
+        password: String,
+        confirmPassword: String
+    ): SignUpFormState {
+        return SignUpFormState(
+            fullNameError = if (!ValidationUtils.isValidName(fullName)) "Invalid full name" else null,
+            emailError = if (!ValidationUtils.isValidEmail(email)) "Invalid email address" else null,
+            mobileError = if (!ValidationUtils.isValidPhone(mobile)) "Invalid mobile number" else null,
+            dobError = if (!ValidationUtils.isValidDateOfBirth(dob)) "Invalid date (must be YYYY-MM-DD and at least 1 year ago)" else null,
+            passwordError = if (!ValidationUtils.isValidPassword(password)) "Password must be at least 8 characters, with one uppercase letter and one number" else null,
+            confirmPasswordError = if (!ValidationUtils.doPasswordsMatch(password, confirmPassword)) "Passwords do not match" else null
+        )
+    }
+
+
+    fun validateLoginForm(email: String, password: String): LoginFormState {
+        return LoginFormState(
+            emailError = if (!ValidationUtils.isValidEmail(email)) "Invalid email address" else null,
+            passwordError = if (!ValidationUtils.isValidPassword(password)) "Invalid password" else null
+        )
+    }
 
 
 
