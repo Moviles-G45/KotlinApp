@@ -1,5 +1,7 @@
 package com.example.budgetbuddy.ui.screens
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -29,11 +31,14 @@ import com.example.budgetbuddy.R
 import com.example.budgetbuddy.model.UserRequest
 import com.example.budgetbuddy.navigation.Screen
 import com.example.budgetbuddy.ui.components.PasswordTextField
+import com.example.budgetbuddy.utils.SignUpFormState
+
 import com.example.budgetbuddy.viewmodel.AuthViewModel
 import com.example.budgetbuddy.viewmodel.AuthState
 
 
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun SignUpScreen(navController: NavController, authViewModel: AuthViewModel) {
     var fullName by remember { mutableStateOf("") }
@@ -46,6 +51,8 @@ fun SignUpScreen(navController: NavController, authViewModel: AuthViewModel) {
     var confirmPasswordVisible by remember { mutableStateOf(false) }
     val authState by authViewModel.authState.collectAsState()
     val scrollState = rememberScrollState()
+    var formState by remember { mutableStateOf(SignUpFormState()) }
+    val isLoading = authState is AuthState.Loading
 
     Box(
         modifier = Modifier
@@ -88,35 +95,48 @@ fun SignUpScreen(navController: NavController, authViewModel: AuthViewModel) {
             CustomTextField(
                 label = "Full Name",
                 value = fullName,
-                onValueChange = { fullName = it })
-            CustomTextField(label = "Email", value = email, onValueChange = { email = it })
-
+                onValueChange = {  if (it.length <= 40) fullName = it })
+            formState.fullNameError?.let {
+                Text(text = it, color = Color.Red, fontSize = 12.sp)
+            }
+            CustomTextField(label = "Email", value = email, onValueChange = {  if (it.length <= 40) email = it })
+            formState.emailError?.let {
+                Text(text = it, color = Color.Red, fontSize = 12.sp)
+            }
             MobileNumberTextField(
                 label = "Número de Móvil",
                 value = mobileNumber,
-                onValueChange = { mobileNumber = it })
-
+                onValueChange = {  if (it.length <= 17) mobileNumber = it })
+            formState.mobileError?.let {
+                Text(text = it, color = Color.Red, fontSize = 12.sp)
+            }
             FechaTextField(
                 label = "Date Of Birth",
                 value = dateOfBirth,
-                onValueChange = { dateOfBirth = it })
-
+                onValueChange = {  if (it.length <= 20) dateOfBirth = it })
+            formState.dobError?.let {
+                Text(text = it, color = Color.Red, fontSize = 12.sp)
+            }
             PasswordTextField(
                 label = "Password",
                 password = password,
-                onPasswordChange = { password = it },
+                onPasswordChange = { if (it.length <= 30) password = it },
                 passwordVisible = passwordVisible,
                 onToggleVisibility = { passwordVisible = !passwordVisible }
             )
-
+            formState.passwordError?.let {
+                Text(text = it, color = Color.Red, fontSize = 12.sp)
+            }
             PasswordTextField(
                 label = "Confirm Password",
                 password = confirmPassword,
-                onPasswordChange = { confirmPassword = it },
+                onPasswordChange = { if (it.length <= 30) confirmPassword = it },
                 passwordVisible = confirmPasswordVisible,
                 onToggleVisibility = { confirmPasswordVisible = !confirmPasswordVisible }
             )
-
+            formState.confirmPasswordError?.let {
+                Text(text = it, color = Color.Red, fontSize = 12.sp)
+            }
             Spacer(modifier = Modifier.height(10.dp))
 
             // Texto de términos y condiciones
@@ -132,8 +152,15 @@ fun SignUpScreen(navController: NavController, authViewModel: AuthViewModel) {
             // 🔹 Botón "Sign Up"
             Button(
                 onClick = {
-                    val user = UserRequest(fullName, email, password, dateOfBirth, mobileNumber)
-                    authViewModel.signup(user)
+                    formState = authViewModel.validateSignUpForm(
+                        fullName, email, mobileNumber, dateOfBirth, password, confirmPassword
+                    )
+
+                    if (!formState.hasError) {
+                        val user = UserRequest(fullName, email, password, dateOfBirth, mobileNumber)
+                        authViewModel.signup(user)
+                    }
+
                 },
                 modifier = Modifier
                     .width(200.dp)
@@ -141,7 +168,7 @@ fun SignUpScreen(navController: NavController, authViewModel: AuthViewModel) {
                 shape = CircleShape,
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4682B4))
             ) {
-                Text(text = "Sign Up", fontSize = 16.sp, color = Color.White)
+                Text(text = if (!isLoading) "Sign Up" else "Processing...", fontSize = 16.sp, color = Color.White)
             }
 
             when (authState) {
@@ -194,6 +221,8 @@ fun CustomTextField(label: String, value: String, onValueChange: (String) -> Uni
             onValueChange = onValueChange,
             placeholder = { Text("example@example.com", color = Color.Gray) },
             shape = RoundedCornerShape(25.dp),
+            maxLines = 1,
+            singleLine = true,
             colors = TextFieldDefaults.colors(
                 focusedTextColor = Color.Black,
                 unfocusedTextColor = Color.Black,
@@ -220,6 +249,8 @@ fun FechaTextField(label: String, value: String, onValueChange: (String) -> Unit
             onValueChange = onValueChange,
             placeholder = { Text("YYYY-MM-DD", color = Color.Gray) },
             shape = RoundedCornerShape(25.dp),
+            maxLines = 1,
+            singleLine = true,
             colors = TextFieldDefaults.colors(
                 focusedTextColor = Color.Black,
                 unfocusedTextColor = Color.Black,
@@ -256,6 +287,8 @@ fun MobileNumberTextField(
             placeholder = { Text("Ej: 3113447798", color = Color.Gray) },
             shape = RoundedCornerShape(25.dp),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
+            maxLines = 1,
+            singleLine = true,
             colors = TextFieldDefaults.colors(
                 focusedTextColor = Color.Black,
                 unfocusedTextColor = Color.Black,
