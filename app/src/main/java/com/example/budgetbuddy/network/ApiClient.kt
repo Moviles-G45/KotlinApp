@@ -7,7 +7,7 @@ import okhttp3.logging.HttpLoggingInterceptor
 import com.example.budgetbuddy.services.AuthService
 
 object ApiClient {
-    private const val BASE_URL = "https://fastapi-service-185169107324.us-central1.run.app/"
+    private const val BASE_URL = "http://192.168.1.96:8000/"
 
     private val loggingInterceptor = HttpLoggingInterceptor().apply {
         level = HttpLoggingInterceptor.Level.BODY
