@@ -32,11 +32,13 @@ import com.example.budgetbuddy.utils.LoginFormState
 import com.example.budgetbuddy.utils.ValidationUtils
 import com.example.budgetbuddy.viewmodel.AuthState
 import com.example.budgetbuddy.viewmodel.AuthViewModel
+import androidx.compose.runtime.saveable.rememberSaveable
+
 
 @Composable
 fun LoginScreen(navController: NavController, authViewModel: AuthViewModel) {
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
+    var email by rememberSaveable  { mutableStateOf("") }
+    var password by rememberSaveable  { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
     val scrollState = rememberScrollState()
     val authState by authViewModel.authState.collectAsState()
