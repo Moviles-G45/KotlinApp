@@ -33,6 +33,8 @@ import com.example.budgetbuddy.utils.ValidationUtils
 import com.example.budgetbuddy.viewmodel.AuthState
 import com.example.budgetbuddy.viewmodel.AuthViewModel
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.platform.LocalContext
+import com.example.budgetbuddy.utils.isConnected
 
 
 @Composable
@@ -44,6 +46,8 @@ fun LoginScreen(navController: NavController, authViewModel: AuthViewModel) {
     val authState by authViewModel.authState.collectAsState()
     var formState by remember { mutableStateOf(LoginFormState()) }
     val isLoading = authState is AuthState.Loading
+    val context = LocalContext.current
+    val hasInternet = isConnected(context)
 
     Box(modifier = Modifier.fillMaxSize()) {
         Box(
@@ -93,21 +97,37 @@ fun LoginScreen(navController: NavController, authViewModel: AuthViewModel) {
             Spacer(modifier = Modifier.height(30.dp))
 
             // 🔵 Botón "Log In"
+
             Button(
                 onClick = {
+                    if (!hasInternet) {
+                        // No intentes loguear si no hay internet
+                        return@Button
+                    }
                     formState = authViewModel.validateLoginForm(email, password)
 
                     if (!formState.hasError) {
                         authViewModel.login(email, password)
                     }
                 },
+
                 modifier = Modifier
                     .width(200.dp)
                     .height(45.dp),
                 shape = CircleShape,
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4682B4))
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4682B4),
+                    disabledContainerColor = Color(0xFFA7C0DA) // gris claro cuando no hay internet
+                )
             ) {
-                Text(text = if (!isLoading) "Log In" else "Loading...", fontSize = 16.sp, color = Color.White)
+                Text(
+                    text = when {
+                        !hasInternet -> "Try Again"
+                        isLoading -> "Loading..."
+                        else -> "Log In"
+                    },
+                    fontSize = 16.sp,
+                    color = Color.White
+                )
             }
 
             // Mostrar estados de autenticación
@@ -127,15 +147,25 @@ fun LoginScreen(navController: NavController, authViewModel: AuthViewModel) {
                 }
                 else -> {}
             }
-
+            if (!hasInternet) {
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "No internet connection. Please check your network.",
+                    color = Color.Red,
+                    fontSize = 14.sp,
+                    textAlign = TextAlign.Center
+                )
+            }
             Spacer(modifier = Modifier.height(10.dp))
             TextButton(onClick = { navController.navigate(Screen.ForgotPassword.route) }) {
                 Text(text = "Forgot Password?", fontSize = 14.sp, color = Color.Black)
             }
 
+
             Spacer(modifier = Modifier.height(10.dp))
             Button(
                 onClick = { navController.navigate(Screen.SignUp.route) },
+                enabled = hasInternet, // ⛔ desactiva si no hay internet
                 modifier = Modifier
                     .width(200.dp)
                     .height(45.dp),

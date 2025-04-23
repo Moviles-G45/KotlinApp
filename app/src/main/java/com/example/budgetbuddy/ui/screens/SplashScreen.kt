@@ -32,12 +32,12 @@ fun SplashScreen(navController: NavController, authViewModel: AuthViewModel) {
                 }
             }
             AuthState.Unauthenticated -> {
-                navController.navigate(Screen.Login.route) {
+                navController.navigate(Screen.Launch.route) {
                     popUpTo(0)
                 }
             }
             AuthState.Idle -> {
-                navController.navigate(Screen.Login.route) {
+                navController.navigate(Screen.Launch.route) {
                     popUpTo(0)
                 }
             }

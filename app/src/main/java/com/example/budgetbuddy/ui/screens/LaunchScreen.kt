@@ -15,9 +15,32 @@ import com.example.budgetbuddy.R
 import com.example.budgetbuddy.navigation.Screen
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import com.example.budgetbuddy.utils.isConnected
+import com.example.budgetbuddy.utils.observeConnectivity
+import com.example.budgetbuddy.utils.NetworkStatus
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import kotlinx.coroutines.flow.StateFlow
+
+
 
 @Composable
 fun LaunchScreen(navController: NavController) {
+    val context = LocalContext.current
+    val networkStatus by remember(context) {
+        observeConnectivity(context)
+    }.collectAsState(initial = NetworkStatus.Available)
+
+    val hasInternet = networkStatus is NetworkStatus.Available
+
+
+
+
+
+
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -46,6 +69,8 @@ fun LaunchScreen(navController: NavController) {
         // Botón de "Log In"
         Button(
             onClick = { navController.navigate(Screen.Login.route) },
+            enabled = hasInternet, // desactiva si no hay internet
+
             modifier = Modifier
                 .width(200.dp)
                 .height(50.dp),
@@ -60,6 +85,7 @@ fun LaunchScreen(navController: NavController) {
         // Botón de "Sign Up"
         Button(
             onClick = { navController.navigate(Screen.SignUp.route) },
+            enabled = hasInternet, // desactiva si no hay internet
             modifier = Modifier
                 .width(200.dp)
                 .height(50.dp),
@@ -76,5 +102,17 @@ fun LaunchScreen(navController: NavController) {
                 color = Color.Black
             )
         }
+
+        if (!hasInternet) {
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = "No internet connection. Please check your network.",
+                color = Color.Red,
+                fontSize = 14.sp,
+                textAlign = TextAlign.Center
+            )
+        }
+
     }
+
 }
