@@ -33,8 +33,10 @@ import com.example.budgetbuddy.R
 import com.example.budgetbuddy.model.UserRequest
 import com.example.budgetbuddy.navigation.Screen
 import com.example.budgetbuddy.ui.components.PasswordTextField
+import com.example.budgetbuddy.utils.NetworkStatus
 import com.example.budgetbuddy.utils.SignUpFormState
 import com.example.budgetbuddy.utils.isConnected
+import com.example.budgetbuddy.utils.observeConnectivity
 
 import com.example.budgetbuddy.viewmodel.AuthViewModel
 import com.example.budgetbuddy.viewmodel.AuthState
@@ -57,7 +59,10 @@ fun SignUpScreen(navController: NavController, authViewModel: AuthViewModel) {
     var formState by remember { mutableStateOf(SignUpFormState()) }
     val isLoading = authState is AuthState.Loading
     val context = LocalContext.current
-    val hasInternet = isConnected(context)
+    val networkStatus by remember(context) { observeConnectivity(context) }
+        .collectAsState(initial = NetworkStatus.Unavailable)
+
+    val hasInternet = networkStatus is NetworkStatus.Available
 
     Box(
         modifier = Modifier

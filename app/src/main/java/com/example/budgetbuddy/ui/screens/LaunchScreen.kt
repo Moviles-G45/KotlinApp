@@ -14,6 +14,7 @@ import androidx.navigation.NavController
 import com.example.budgetbuddy.R
 import com.example.budgetbuddy.navigation.Screen
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import com.example.budgetbuddy.utils.isConnected
@@ -21,7 +22,9 @@ import com.example.budgetbuddy.utils.observeConnectivity
 import com.example.budgetbuddy.utils.NetworkStatus
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import kotlinx.coroutines.flow.StateFlow
 
 
@@ -29,13 +32,19 @@ import kotlinx.coroutines.flow.StateFlow
 @Composable
 fun LaunchScreen(navController: NavController) {
     val context = LocalContext.current
-    val networkStatus by remember(context) {
-        observeConnectivity(context)
-    }.collectAsState(initial = NetworkStatus.Available)
 
-    val hasInternet = networkStatus is NetworkStatus.Available
+    // 🔹 Estado inicial real: usa isConnected
+    val initialConnection = isConnected(context)
 
+    var hasInternet by remember { mutableStateOf(initialConnection) }
 
+    // 🔹 Actualización reactiva posterior
+    val networkStatus by observeConnectivity(context).collectAsState(initial = if (hasInternet) NetworkStatus.Available else NetworkStatus.Unavailable)
+
+    // 🔹 Sincroniza el valor reactivo
+    LaunchedEffect(networkStatus) {
+        hasInternet = networkStatus is NetworkStatus.Available
+    }
 
 
 
@@ -95,7 +104,9 @@ fun LaunchScreen(navController: NavController) {
             Text(text = "Sign Up", fontSize = 16.sp, color = Color.White)
         }
 
-        TextButton(onClick = { navController.navigate(Screen.ForgotPassword.route) }) {
+        TextButton(onClick = { navController.navigate(Screen.ForgotPassword.route) },
+            enabled = hasInternet, // desactiva si no hay internet
+        ) {
             Text(
                 text = "Forgot Password?",
                 fontSize = 14.sp,

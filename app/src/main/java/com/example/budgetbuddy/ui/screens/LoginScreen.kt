@@ -34,7 +34,9 @@ import com.example.budgetbuddy.viewmodel.AuthState
 import com.example.budgetbuddy.viewmodel.AuthViewModel
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.platform.LocalContext
+import com.example.budgetbuddy.utils.NetworkStatus
 import com.example.budgetbuddy.utils.isConnected
+import com.example.budgetbuddy.utils.observeConnectivity
 
 
 @Composable
@@ -47,7 +49,12 @@ fun LoginScreen(navController: NavController, authViewModel: AuthViewModel) {
     var formState by remember { mutableStateOf(LoginFormState()) }
     val isLoading = authState is AuthState.Loading
     val context = LocalContext.current
-    val hasInternet = isConnected(context)
+
+    val networkStatus by remember(context) { observeConnectivity(context) }
+        .collectAsState(initial = NetworkStatus.Unavailable)
+
+    val hasInternet = networkStatus is NetworkStatus.Available
+
 
     Box(modifier = Modifier.fillMaxSize()) {
         Box(

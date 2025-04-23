@@ -79,7 +79,7 @@ class AuthViewModel(
     fun login(email: String, password: String) {
 
         if (!isConnected(appContext)) {
-            _authState.value = AuthState.Error("No internet connection. Please check your network.")
+            _authState.value = AuthState.Error("")
             return
         }
         // Validación de campos vacíos
