@@ -19,6 +19,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -33,6 +34,7 @@ import com.example.budgetbuddy.model.UserRequest
 import com.example.budgetbuddy.navigation.Screen
 import com.example.budgetbuddy.ui.components.PasswordTextField
 import com.example.budgetbuddy.utils.SignUpFormState
+import com.example.budgetbuddy.utils.isConnected
 
 import com.example.budgetbuddy.viewmodel.AuthViewModel
 import com.example.budgetbuddy.viewmodel.AuthState
@@ -54,6 +56,8 @@ fun SignUpScreen(navController: NavController, authViewModel: AuthViewModel) {
     val scrollState = rememberScrollState()
     var formState by remember { mutableStateOf(SignUpFormState()) }
     val isLoading = authState is AuthState.Loading
+    val context = LocalContext.current
+    val hasInternet = isConnected(context)
 
     Box(
         modifier = Modifier
@@ -153,23 +157,35 @@ fun SignUpScreen(navController: NavController, authViewModel: AuthViewModel) {
             // 🔹 Botón "Sign Up"
             Button(
                 onClick = {
+                    if (!hasInternet) {
+                        // No intentes loguear si no hay internet
+                        return@Button
+                    }
                     formState = authViewModel.validateSignUpForm(
                         fullName, email, mobileNumber, dateOfBirth, password, confirmPassword
                     )
-
                     if (!formState.hasError) {
                         val user = UserRequest(fullName, email, password, dateOfBirth, mobileNumber)
                         authViewModel.signup(user)
                     }
 
                 },
+
                 modifier = Modifier
                     .width(200.dp)
                     .height(45.dp),
                 shape = CircleShape,
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4682B4))
             ) {
-                Text(text = if (!isLoading) "Sign Up" else "Processing...", fontSize = 16.sp, color = Color.White)
+                Text(
+                    text = when {
+                        !hasInternet -> "Try Again"
+                        isLoading -> "Loading..."
+                        else -> "Log In"
+                    },
+                    fontSize = 16.sp,
+                    color = Color.White
+                )
             }
 
             when (authState) {
@@ -188,7 +204,15 @@ fun SignUpScreen(navController: NavController, authViewModel: AuthViewModel) {
 
                 else -> {}
             }
-
+            if (!hasInternet) {
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "No internet connection. Please check your network.",
+                    color = Color.Red,
+                    fontSize = 14.sp,
+                    textAlign = TextAlign.Center
+                )
+            }
             Spacer(modifier = Modifier.height(10.dp))
 
             // 🔹 Texto "Already have an account? Log In"

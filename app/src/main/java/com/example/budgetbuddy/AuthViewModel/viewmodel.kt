@@ -22,6 +22,8 @@ import androidx.compose.runtime.*
 import com.example.budgetbuddy.utils.LoginFormState
 import com.example.budgetbuddy.utils.SignUpFormState
 import com.example.budgetbuddy.utils.ValidationUtils
+import com.example.budgetbuddy.utils.isConnected
+
 import retrofit2.Response
 
 
@@ -36,7 +38,12 @@ sealed class AuthState {
 class AuthViewModel(
     private val repository: AuthRepository,
     context: Context
-) : ViewModel() {
+
+) :
+
+
+    ViewModel() {
+    private val appContext = context.applicationContext
 
     private val sessionManager = SessionManager(context)
 
@@ -71,6 +78,10 @@ class AuthViewModel(
     // LOGIN
     fun login(email: String, password: String) {
 
+        if (!isConnected(appContext)) {
+            _authState.value = AuthState.Error("No internet connection. Please check your network.")
+            return
+        }
         // Validación de campos vacíos
         if (email.isBlank() || password.isBlank()) {
             _authState.value = AuthState.Error("Los campos no pueden estar vacíos")
