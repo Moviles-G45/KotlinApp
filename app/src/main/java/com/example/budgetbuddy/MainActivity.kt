@@ -18,8 +18,11 @@ import com.example.budgetbuddy.network.ApiClient
 import com.example.budgetbuddy.ui.theme.BudgetBuddyTheme
 import com.example.budgetbuddy.viewmodel.AuthViewModel
 import com.example.budgetbuddy.repository.AuthRepository
+import com.example.budgetbuddy.repository.BudgetRepository
 import com.example.budgetbuddy.services.AuthService
+import com.example.budgetbuddy.services.BudgetService
 import com.example.budgetbuddy.services.NotificationWorker
+import com.example.budgetbuddy.viewmodel.BudgetViewModel
 import com.example.budgetbuddy.workers.MonthlyReportWorker
 import java.util.Calendar
 import java.util.concurrent.TimeUnit
@@ -27,7 +30,6 @@ import java.util.concurrent.TimeUnit
 class MainActivity : ComponentActivity() {
     private val LOCATION_PERMISSION_REQUEST_CODE = 1001
     private val NOTIFICATION_PERMISSION_REQUEST_CODE = 1002 // ✅ Código para solicitud de notificaciones
-
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
