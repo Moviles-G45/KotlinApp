@@ -23,6 +23,8 @@ import com.example.budgetbuddy.utils.LoginFormState
 import com.example.budgetbuddy.utils.SignUpFormState
 import com.example.budgetbuddy.utils.ValidationUtils
 import com.example.budgetbuddy.utils.isConnected
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 import retrofit2.Response
 
@@ -62,9 +64,15 @@ class AuthViewModel(
     //  SIGN UP
     fun signup(user: UserRequest) {
         _authState.value = AuthState.Loading
+
         viewModelScope.launch {
-            repository.signup(user).fold(
+            val result = withContext(Dispatchers.IO) {
+                repository.signup(user)
+            }
+
+            result.fold(
                 onSuccess = {
+                    // Si el signup fue exitoso, logueamos automáticamente
                     login(user.email, user.password)
                 },
                 onFailure = {
