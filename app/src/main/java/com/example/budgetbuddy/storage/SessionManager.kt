@@ -9,6 +9,7 @@ class SessionManager(context: Context) {
     companion object {
         private const val PREFS_FILENAME = "auth_prefs"
         private const val KEY_TOKEN = "firebase_token"
+        private const val KEY_LAST_SYNC = "last_sync_timestamp"
     }
 
     private val sharedPreferences = EncryptedSharedPreferences.create(
@@ -32,4 +33,13 @@ class SessionManager(context: Context) {
     fun clearToken() {
         sharedPreferences.edit().remove(KEY_TOKEN).apply()
     }
+
+    fun saveLastSync(ts: Long) {
+        sharedPreferences.edit().putLong(KEY_LAST_SYNC, ts).apply()
+    }
+
+    fun fetchLastSync(): Long {
+        return sharedPreferences.getLong(KEY_LAST_SYNC, 0L)
+    }
+
 }
