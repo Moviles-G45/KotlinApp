@@ -44,14 +44,11 @@ class AuthViewModel(
     context: Context
 
 ) :
-
-
     ViewModel() {
     private val appContext = context.applicationContext
 
     private val sessionManager = SessionManager(context)
 
-    private var isLoggingIn = false
 
     private val _authState = MutableStateFlow<AuthState>(AuthState.Idle)
     val authState: StateFlow<AuthState> = _authState // UI observará este estado
@@ -89,7 +86,6 @@ class AuthViewModel(
 
     // LOGIN
     fun login(email: String, password: String) {
-        if (isLoggingIn) return // ⛔ Ya se está haciendo login
 
         if (!isConnected(appContext)) {
             _authState.value = AuthState.Error("Sin conexión a internet")
@@ -101,7 +97,6 @@ class AuthViewModel(
             return
         }
 
-        isLoggingIn = true // ✅ Bloquear más llamadas
         _authState.value = AuthState.Loading
 
         Firebase.auth.signInWithEmailAndPassword(email, password)
@@ -115,12 +110,10 @@ class AuthViewModel(
                             sendTokenToBackend(idToken)
                         } else {
                             _authState.value = AuthState.Error("No se pudo obtener el token")
-                            isLoggingIn = false // 🔓 Permitir reintento
                         }
                     }
                 } else {
                     _authState.value = AuthState.Error(task.exception?.localizedMessage ?: "Error en login")
-                    isLoggingIn = false // 🔓 Permitir reintento
                 }
             }
     }
@@ -132,11 +125,9 @@ class AuthViewModel(
                 val result = repository.login(UserLogin(idToken))
                 _authState.value = result.fold(
                     onSuccess = {
-                        isLoggingIn = false // 🔓
                         AuthState.Success(it)
                     },
                     onFailure = { error ->
-                        isLoggingIn = false // 🔓
                         if (error.message?.contains("401") == true || error.message?.contains("Unauthorized") == true) {
                             AuthState.Unauthenticated
                         } else {
@@ -145,7 +136,6 @@ class AuthViewModel(
                     }
                 )
             } catch (e: Exception) {
-                isLoggingIn = false // 🔓
                 _authState.value = AuthState.Error(e.localizedMessage ?: "Login failed")
             }
         }

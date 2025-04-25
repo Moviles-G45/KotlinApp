@@ -27,9 +27,31 @@ import com.example.budgetbuddy.workers.MonthlyReportWorker
 import java.util.Calendar
 import java.util.concurrent.TimeUnit
 
+import androidx.activity.compose.setContent
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
+import androidx.navigation.compose.rememberNavController
+import androidx.work.*
+import com.example.budgetbuddy.navigation.AppNavigation
+import com.example.budgetbuddy.utils.NetworkConnectionObserver
+import com.example.budgetbuddy.viewmodel.TransactionCacheViewModel
+import com.example.budgetbuddy.viewmodel.TransactionCreateViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+
+
 class MainActivity : ComponentActivity() {
     private val LOCATION_PERMISSION_REQUEST_CODE = 1001
-    private val NOTIFICATION_PERMISSION_REQUEST_CODE = 1002 // ✅ Código para solicitud de notificaciones
+    private val NOTIFICATION_PERMISSION_REQUEST_CODE = 1002
+
+
+    private lateinit var networkConnectionObserver: NetworkConnectionObserver
+    private lateinit var transactionCacheViewModel: TransactionCacheViewModel
+    private lateinit var transactionCreateViewModel: TransactionCreateViewModel
+
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -38,6 +60,54 @@ class MainActivity : ComponentActivity() {
         checkAndRequestPermissions() // ✅ Ahora incluye permisos de notificación
         scheduleWeeklyNotification() // ✅ Programamos la notificación cada viernes a las 2:46 PM
         scheduleMonthlyReport()
+
+        // Inicializamos el observer para detectar la conectividad
+        val authService = ApiClient.createService(AuthService::class.java)
+        val authViewModel = AuthViewModel(
+            AuthRepository(authService),
+            context = this@MainActivity
+        )
+        networkConnectionObserver = NetworkConnectionObserver(
+            context = this,
+            onNetworkAvailable = {
+                lifecycleScope.launch(Dispatchers.Main) {
+                    Toast.makeText(applicationContext, "Conexión a Internet detectada", Toast.LENGTH_SHORT).show()
+
+                    val token = authViewModel.getPersistedToken()
+                    if (!token.isNullOrEmpty()) {
+                        launch(Dispatchers.IO) {
+                            transactionCacheViewModel.cachedTransactions.collect { transactionsMap ->
+                                if (transactionsMap.isNotEmpty()) {
+                                    transactionsMap.forEach { (tokenKey, transactionList) ->
+                                        transactionList.forEach { transaction ->
+                                            transactionCreateViewModel.createTransaction(transaction, tokenKey)
+                                        }
+                                    }
+
+                                    withContext(Dispatchers.Main) {
+                                        Toast.makeText(applicationContext, "Transacciones enviadas correctamente", Toast.LENGTH_SHORT).show()
+                                    }
+                                } else {
+                                    withContext(Dispatchers.Main) {
+                                        Toast.makeText(applicationContext, "No hay transacciones para enviar", Toast.LENGTH_SHORT).show()
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        )
+
+
+
+        // Iniciamos la observación de la conexión a la red
+        networkConnectionObserver.startObserving()
+
+        // Inicializamos los ViewModels
+        transactionCacheViewModel = ViewModelProvider(this)[TransactionCacheViewModel::class.java]
+        transactionCreateViewModel = ViewModelProvider(this)[TransactionCreateViewModel::class.java]
+
 
         setContent {
             val authService = ApiClient.createService(AuthService::class.java)
@@ -146,4 +216,11 @@ class MainActivity : ComponentActivity() {
         WorkManager.getInstance(applicationContext)
             .enqueueUniquePeriodicWork("MonthlyReport", ExistingPeriodicWorkPolicy.REPLACE, workRequest)
     }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        // Detener la observación de la conexión para liberar recursos
+        networkConnectionObserver.stopObserving()
+    }
+
 }
