@@ -12,6 +12,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -22,6 +23,7 @@ import com.example.budgetbuddy.ui.components.BottomNavBar
 import com.example.budgetbuddy.ui.components.BottomNavTab
 import com.example.budgetbuddy.ui.components.FilterPanel
 import com.example.budgetbuddy.ui.components.FilterType
+import com.example.budgetbuddy.ui.components.OfflineBanner
 import com.example.budgetbuddy.ui.components.SavingsPanel
 import com.example.budgetbuddy.ui.theme.DarkGreen
 import com.example.budgetbuddy.ui.theme.DarkTeal
@@ -29,6 +31,9 @@ import com.example.budgetbuddy.ui.theme.LightGreenishWhite
 import com.example.budgetbuddy.ui.theme.NeonGreen
 import com.example.budgetbuddy.ui.theme.PrimaryBlue
 import com.example.budgetbuddy.ui.theme.PureWhite
+import com.example.budgetbuddy.utils.DateTimeUtils
+import com.example.budgetbuddy.utils.NetworkStatus
+import com.example.budgetbuddy.utils.observeConnectivity
 import com.example.budgetbuddy.viewmodel.AuthViewModel
 import com.example.budgetbuddy.viewmodel.TransactionViewModel
 import java.util.Calendar
@@ -43,6 +48,27 @@ fun HomeScreen(
 
     // Controlamos el estado del filtro seleccionado
     var selectedFilter by remember { mutableStateOf(FilterType.MONTHLY) }
+
+    // 1) Banner si estamos offline:
+
+    val context = LocalContext.current
+    val networkStatus by remember(context) { observeConnectivity(context) }
+        .collectAsState(initial = NetworkStatus.Unavailable)
+    val hasInternet = networkStatus is NetworkStatus.Available
+
+    if (!hasInternet) {
+        OfflineBanner()
+    }
+
+    // 2) Texto con la última sincronización:
+    val lastTs by transactionViewModel.lastUpdated
+    if (lastTs > 0L) {
+        Text(
+            text = "Última actualización: ${DateTimeUtils.formatTimestamp(lastTs)}",
+            style = MaterialTheme.typography.labelSmall,
+            modifier = Modifier.padding(8.dp)
+        )
+    }
 
     // Función para actualizar las transacciones según el filtro
     fun updateTransactions(filter: FilterType) {
