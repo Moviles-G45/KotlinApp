@@ -1,5 +1,6 @@
 package com.example.budgetbuddy.ui.screens
 
+import android.app.DatePickerDialog
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -22,13 +23,17 @@ import com.example.budgetbuddy.model.TransactionRequest
 import com.example.budgetbuddy.navigation.Screen
 import com.example.budgetbuddy.ui.components.BottomNavBar
 import com.example.budgetbuddy.ui.components.BottomNavTab
-import com.example.budgetbuddy.ui.components.DatePickerField
 import com.example.budgetbuddy.ui.theme.LightGreenishWhite
 import com.example.budgetbuddy.ui.theme.PrimaryBlue
 import com.example.budgetbuddy.ui.theme.PureWhite
+import com.example.budgetbuddy.utils.NetworkStatus
+import com.example.budgetbuddy.utils.observeConnectivity
 import com.example.budgetbuddy.viewmodel.AuthViewModel
 import com.example.budgetbuddy.viewmodel.CategoryViewModel
+import com.example.budgetbuddy.viewmodel.TransactionCacheViewModel
 import com.example.budgetbuddy.viewmodel.TransactionCreateViewModel
+import java.text.SimpleDateFormat
+import java.util.*
 
 @Composable
 fun CreateExpenseScreen(
@@ -39,8 +44,11 @@ fun CreateExpenseScreen(
 ) {
     val context = LocalContext.current
     val userToken = authViewModel.getPersistedToken() ?: ""
+    val cacheViewModel: TransactionCacheViewModel = viewModel()
+
     LaunchedEffect(Unit) { categoryViewModel.fetchCategories() }
     val categories by categoryViewModel.categories.collectAsState()
+
     var date by remember { mutableStateOf("") }
     var categoryName by remember { mutableStateOf("") }
     var categoryId by remember { mutableStateOf<Int?>(null) }
@@ -49,9 +57,11 @@ fun CreateExpenseScreen(
     var message by remember { mutableStateOf("") }
     var expanded by remember { mutableStateOf(false) }
 
-    // Scaffold para la barra inferior y el fondo principal
+    val networkStatus by remember(context) { observeConnectivity(context) }.collectAsState(initial = NetworkStatus.Unavailable)
+    val hasInternet = networkStatus is NetworkStatus.Available
+
     Scaffold(
-        containerColor = LightGreenishWhite, // Color de fondo general
+        containerColor = LightGreenishWhite,
         bottomBar = {
             BottomNavBar(
                 selectedTab = BottomNavTab.ADD,
@@ -59,7 +69,6 @@ fun CreateExpenseScreen(
                 onAddExpenseClick = { navController.navigate(Screen.AddExpense.route) },
                 onMapClick = { navController.navigate(Screen.Map.route) },
                 onBudgetClick = { navController.navigate(Screen.CreateBudget.route) },
-
                 onProfileClick = {
                     authViewModel.logout()
                     navController.navigate(Screen.Login.route) {
@@ -72,17 +81,15 @@ fun CreateExpenseScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(PrimaryBlue)  // Pintamos la parte superior de azul
+                .background(PrimaryBlue)
                 .padding(paddingValues)
         ) {
-            // ===== SECCIÓN SUPERIOR (FONDO AZUL + FLECHA DE REGRESO) =====
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(PrimaryBlue)
                     .padding(16.dp)
             ) {
-                // Flecha para regresar
                 IconButton(
                     modifier = Modifier.align(Alignment.CenterStart),
                     onClick = { navController.popBackStack() }
@@ -101,7 +108,6 @@ fun CreateExpenseScreen(
                 )
             }
 
-            // ===== SECCIÓN INFERIOR (FONDO VERDE CLARO) =====
             Box(
                 modifier = Modifier
                     .weight(1f)
@@ -116,15 +122,40 @@ fun CreateExpenseScreen(
                 ) {
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // ===== Campo de Fecha (Usando el nuevo componente) =====
-                    DatePickerField(
-                        selectedDate = date,
-                        onDateSelected = { date = it }
+                    // ===== Date Picker Manual =====
+                    OutlinedTextField(
+                        value = date,
+                        onValueChange = {},
+                        label = { Text("Select Date") },
+                        readOnly = true,
+                        modifier = Modifier.fillMaxWidth(),
+                        trailingIcon = {
+                            IconButton(onClick = {
+                                val calendar = Calendar.getInstance()
+                                val dialog = DatePickerDialog(
+                                    context,
+                                    { _, year, month, dayOfMonth ->
+                                        val selectedCal = Calendar.getInstance()
+                                        selectedCal.set(year, month, dayOfMonth)
+                                        val formatter = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+                                        formatter.timeZone = TimeZone.getDefault()
+                                        date = formatter.format(selectedCal.time)
+                                    },
+                                    calendar.get(Calendar.YEAR),
+                                    calendar.get(Calendar.MONTH),
+                                    calendar.get(Calendar.DAY_OF_MONTH)
+                                )
+                                dialog.datePicker.maxDate = System.currentTimeMillis()
+                                dialog.show()
+                            }) {
+                                Icon(Icons.Default.ArrowDropDown, contentDescription = "Select Date")
+                            }
+                        }
                     )
 
                     Spacer(modifier = Modifier.height(10.dp))
 
-                    // ===== Categoría (Dropdown) =====
+                    // ===== Categoría =====
                     Box {
                         OutlinedTextField(
                             value = categoryName,
@@ -157,10 +188,14 @@ fun CreateExpenseScreen(
 
                     Spacer(modifier = Modifier.height(10.dp))
 
-                    // ===== Campo Monto =====
+                    // ===== Monto =====
                     OutlinedTextField(
                         value = amount,
-                        onValueChange = { amount = it },
+                        onValueChange = {
+                            if (it.length <= 10 && it.all { char -> char.isDigit() || char == '.' }) {
+                                amount = it
+                            }
+                        },
                         label = { Text("Amount") },
                         keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
                         modifier = Modifier.fillMaxWidth()
@@ -168,27 +203,26 @@ fun CreateExpenseScreen(
 
                     Spacer(modifier = Modifier.height(10.dp))
 
-                    // ===== Campo Título =====
+                    // ===== Título =====
                     OutlinedTextField(
                         value = title,
-                        onValueChange = { title = it },
+                        onValueChange = { if (it.length <= 15) title = it },
                         label = { Text("Expense Title") },
                         modifier = Modifier.fillMaxWidth()
                     )
 
                     Spacer(modifier = Modifier.height(10.dp))
 
-                    // ===== Campo Mensaje Opcional =====
+                    // ===== Mensaje =====
                     OutlinedTextField(
                         value = message,
-                        onValueChange = { message = it },
+                        onValueChange = { if (it.length <= 25) message = it },
                         label = { Text("Enter Message") },
                         modifier = Modifier.fillMaxWidth()
                     )
 
                     Spacer(modifier = Modifier.height(20.dp))
 
-                    // ===== Botón Guardar =====
                     Button(
                         onClick = {
                             val parsedAmount = amount.toDoubleOrNull() ?: 0.0
@@ -199,9 +233,13 @@ fun CreateExpenseScreen(
                                     amount = parsedAmount,
                                     description = title
                                 )
-                                transactionViewModel.createTransaction(transaction, userToken)
-                                Toast.makeText(context, "Transaction Created!", Toast.LENGTH_SHORT).show()
-                                // Regresa a la pantalla anterior
+                                if (!hasInternet) {
+                                    cacheViewModel.saveTransactionToCache(userToken, transaction)
+                                    Toast.makeText(context, "Transaction saved locally!", Toast.LENGTH_SHORT).show()
+                                } else {
+                                    transactionViewModel.createTransaction(transaction, userToken)
+                                    Toast.makeText(context, "Transaction Created!", Toast.LENGTH_SHORT).show()
+                                }
                                 navController.popBackStack()
                             } else {
                                 Toast.makeText(context, "Please fill all fields", Toast.LENGTH_SHORT).show()
@@ -210,12 +248,12 @@ fun CreateExpenseScreen(
                         modifier = Modifier.fillMaxWidth(),
                         colors = ButtonDefaults.buttonColors(containerColor = PrimaryBlue)
                     ) {
-                        Text("Save", color = PureWhite)
+                        Text(text = if (!hasInternet) "Save locally" else "Save", color = PureWhite)
                     }
 
                     Spacer(modifier = Modifier.height(20.dp))
                 }
             }
         }
-    }
+     }
 }
