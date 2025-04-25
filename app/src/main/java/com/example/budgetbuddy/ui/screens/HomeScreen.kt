@@ -328,25 +328,26 @@ fun HomeScreen(
                     }
 
 
-                BottomNavBar(
-                    selectedTab = BottomNavTab.HOME,
-                    onHomeClick = { navController.navigate(Screen.Home.route) },
-                    onAddExpenseClick = { navController.navigate(Screen.AddExpense.route) },
-                    onMapClick = { navController.navigate(Screen.Map.route) },
-                    onBudgetClick = { navController.navigate(Screen.CreateBudget.route) }, // 👈 aquí
-                    onProfileClick = {
-                        authViewModel.logout()
-                        navController.navigate(Screen.Login.route) {
-                            popUpTo(Screen.Home.route) { inclusive = true }
+                    BottomNavBar(
+                        selectedTab = BottomNavTab.HOME,
+                        onHomeClick = { navController.navigate(Screen.Home.route) },
+                        onAddExpenseClick = { navController.navigate(Screen.AddExpense.route) },
+                        onMapClick = { navController.navigate(Screen.Map.route) },
+                        onBudgetClick = { navController.navigate(Screen.CreateBudget.route) }, // 👈 aquí
+                        onProfileClick = {
+                            authViewModel.logout()
+                            navController.navigate(Screen.Login.route) {
+                                popUpTo(Screen.Home.route) { inclusive = true }
+                            }
                         }
                     )
                 }
             }
-        }
 
-        // Banner offline encima de todo
-        if (!hasInternet) {
-            OfflineBanner()
+            // Banner offline encima de todo
+            if (!hasInternet) {
+                OfflineBanner()
+            }
         }
     }
 }
