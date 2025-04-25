@@ -7,6 +7,6 @@ import retrofit2.http.POST
 
 interface BudgetService {
 
-    @POST("budget/set") // ⚠️ Usa el endpoint exacto de tu backend FastAPI
+    @POST("budget/") // ⚠️ Usa el endpoint exacto de tu backend FastAPI
     suspend fun setBudget(@Body budget: BudgetCreate): Response<Unit>
 }

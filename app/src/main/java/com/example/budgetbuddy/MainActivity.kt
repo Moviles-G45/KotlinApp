@@ -33,6 +33,7 @@ class MainActivity : ComponentActivity() {
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        ApiClient.init(applicationContext)
 
         checkAndRequestPermissions() // ✅ Ahora incluye permisos de notificación
         scheduleWeeklyNotification() // ✅ Programamos la notificación cada viernes a las 2:46 PM

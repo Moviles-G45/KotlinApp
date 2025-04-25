@@ -121,7 +121,7 @@ fun CreateBudgetScreen(
                         if (total == 100) {
                             val month = LocalDate.now().monthValue
                             val year = LocalDate.now().year
-                            viewModel.createBudget(needs, wants, savings, month, year)
+                            viewModel.createBudget(context, needs, wants, savings, month, year)
                         } else {
                             Toast.makeText(context, "Total must be 100%", Toast.LENGTH_SHORT).show()
                         }
