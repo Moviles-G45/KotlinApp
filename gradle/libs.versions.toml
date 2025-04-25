@@ -20,6 +20,8 @@ androidx-core = "1.12.0"
 lifecycleViewModel = "2.6.1"
 playServicesLocation = "21.3.0"
 workRuntimeKtx = "2.10.0"
+roomCommonJvm = "2.7.1"
+roomRuntimeAndroid = "2.7.1"
 
 
 
@@ -51,6 +53,8 @@ play-services-location = { group = "com.google.android.gms", name = "play-servic
 work-runtime-ktx = { module = "androidx.work:work-runtime-ktx", version.ref = "androidx-work" }
 core-ktx = { module = "androidx.core:core-ktx", version.ref = "androidx-core" }
 androidx-work-runtime-ktx = { group = "androidx.work", name = "work-runtime-ktx", version.ref = "workRuntimeKtx" }
+androidx-room-common-jvm = { group = "androidx.room", name = "room-common-jvm", version.ref = "roomCommonJvm" }
+androidx-room-runtime-android = { group = "androidx.room", name = "room-runtime-android", version.ref = "roomRuntimeAndroid" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
