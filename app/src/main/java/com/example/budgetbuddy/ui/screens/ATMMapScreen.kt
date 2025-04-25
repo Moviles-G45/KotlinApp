@@ -105,6 +105,7 @@ fun ATMMapScreen(navController: NavController, authViewModel: AuthViewModel, vie
                 onHomeClick = { navController.navigate(Screen.Home.route) },
                 onAddExpenseClick = { navController.navigate(Screen.AddExpense.route) },
                 onMapClick = { navController.navigate(Screen.Map.route) },
+                onBudgetClick = { navController.navigate(Screen.CreateBudget.route) },
                 onProfileClick = {
                     authViewModel.logout()
                     navController.navigate(Screen.Login.route) {

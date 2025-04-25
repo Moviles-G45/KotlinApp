@@ -24,6 +24,8 @@ import com.example.budgetbuddy.utils.SignUpFormState
 import com.example.budgetbuddy.utils.ValidationUtils
 import com.example.budgetbuddy.utils.isConnected
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 
 import retrofit2.Response
@@ -48,6 +50,8 @@ class AuthViewModel(
     private val appContext = context.applicationContext
 
     private val sessionManager = SessionManager(context)
+
+    private var isLoggingIn = false
 
     private val _authState = MutableStateFlow<AuthState>(AuthState.Idle)
     val authState: StateFlow<AuthState> = _authState // UI observará este estado
@@ -85,55 +89,97 @@ class AuthViewModel(
 
     // LOGIN
     fun login(email: String, password: String) {
+        if (isLoggingIn) return // ⛔ Ya se está haciendo login
 
         if (!isConnected(appContext)) {
-            _authState.value = AuthState.Error("")
+            _authState.value = AuthState.Error("Sin conexión a internet")
             return
         }
-        // Validación de campos vacíos
+
         if (email.isBlank() || password.isBlank()) {
             _authState.value = AuthState.Error("Los campos no pueden estar vacíos")
             return
         }
 
-        _authState.value = AuthState.Loading // Mostrar loading
+        isLoggingIn = true // ✅ Bloquear más llamadas
+        _authState.value = AuthState.Loading
+
         Firebase.auth.signInWithEmailAndPassword(email, password)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
-                    Firebase.auth.currentUser?.getIdToken(true)
-                        ?.addOnCompleteListener { tokenTask ->
-                            if (tokenTask.isSuccessful) {
-                                val idToken = tokenTask.result?.token
-                                if (idToken != null) {
-                                    sessionManager.saveToken(idToken)
-                                    sendTokenToBackend(idToken)
-                                } else {
-                                    _authState.value = AuthState.Error("No se pudo obtener el token")
-                                }
-                            } else {
-                                _authState.value = AuthState.Error(tokenTask.exception?.localizedMessage ?: "Error en token")
-                            }
+                    viewModelScope.launch {
+                        val idToken = getFirebaseIdTokenWithRetry()
+                        if (idToken != null) {
+                            sessionManager.saveToken(idToken)
+                            kotlinx.coroutines.delay(4000)
+                            sendTokenToBackend(idToken)
+                        } else {
+                            _authState.value = AuthState.Error("No se pudo obtener el token")
+                            isLoggingIn = false // 🔓 Permitir reintento
                         }
+                    }
                 } else {
                     _authState.value = AuthState.Error(task.exception?.localizedMessage ?: "Error en login")
+                    isLoggingIn = false // 🔓 Permitir reintento
                 }
             }
     }
 
+
     private fun sendTokenToBackend(idToken: String) {
         viewModelScope.launch {
             try {
-                val result = repository.login(UserLogin(idToken)) // `result` es un Result<AuthResponse>
-
+                val result = repository.login(UserLogin(idToken))
                 _authState.value = result.fold(
-                    onSuccess = { AuthState.Success(it) }, // Extraemos el valor si es éxito
-                    onFailure = { AuthState.Error(it.localizedMessage ?: "Login failed") } //  Manejo de error
+                    onSuccess = {
+                        isLoggingIn = false // 🔓
+                        AuthState.Success(it)
+                    },
+                    onFailure = { error ->
+                        isLoggingIn = false // 🔓
+                        if (error.message?.contains("401") == true || error.message?.contains("Unauthorized") == true) {
+                            AuthState.Unauthenticated
+                        } else {
+                            AuthState.Error(error.localizedMessage ?: "Login failed")
+                        }
+                    }
                 )
             } catch (e: Exception) {
+                isLoggingIn = false // 🔓
                 _authState.value = AuthState.Error(e.localizedMessage ?: "Login failed")
             }
         }
     }
+
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    private suspend fun getFirebaseIdTokenWithRetry(): String? {
+        val user = Firebase.auth.currentUser ?: return null
+        var attempts = 0
+        val maxAttempts = 5
+
+        while (attempts < maxAttempts) {
+            val token = suspendCancellableCoroutine<String?> { cont ->
+                user.getIdToken(true).addOnCompleteListener { task ->
+                    if (task.isSuccessful) {
+                        cont.resume(task.result?.token, null)
+                    } else {
+                        cont.resume(null, null)
+                    }
+                }
+            }
+
+            if (!token.isNullOrBlank()) return token
+
+            attempts++
+            kotlinx.coroutines.delay(300L) // ⏳ Espera 300ms antes de reintentar
+        }
+
+        return null
+    }
+
+
+
 
     fun getPersistedToken(): String? {
         return sessionManager.fetchToken()

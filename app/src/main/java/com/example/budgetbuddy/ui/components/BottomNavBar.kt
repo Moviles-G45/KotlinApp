@@ -18,6 +18,7 @@ enum class BottomNavTab {
     HOME,
     ADD,
     MAP,
+    BUDGET,
     PROFILE
 }
 
@@ -27,7 +28,9 @@ fun BottomNavBar(
     onHomeClick: () -> Unit,
     onAddExpenseClick: () -> Unit,
     onMapClick: () -> Unit,
-    onProfileClick: () -> Unit
+    onProfileClick: () -> Unit,
+    onBudgetClick: () -> Unit, // 👈 nuevo parámetro
+
 ) {
     Box(
         modifier = Modifier
@@ -112,6 +115,29 @@ fun BottomNavBar(
                     Icon(
                         painter = painterResource(id = R.drawable.map),
                         contentDescription = "Profile Icon",
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
+            }
+            // Botón Budget
+            IconButton(onClick = onBudgetClick) {
+                Box(
+                    modifier = Modifier.size(48.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    if (selectedTab == BottomNavTab.BUDGET) {
+                        Box(
+                            modifier = Modifier
+                                .matchParentSize()
+                                .background(
+                                    color = PrimaryBlue,
+                                    shape = RoundedCornerShape(22.dp)
+                                )
+                        )
+                    }
+                    Icon(
+                        painter = painterResource(id = R.drawable.savings), // asegúrate de tener este ícono
+                        contentDescription = "Budget Icon",
                         modifier = Modifier.size(24.dp)
                     )
                 }

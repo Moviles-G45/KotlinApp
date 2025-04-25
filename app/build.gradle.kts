@@ -68,6 +68,7 @@ dependencies {
     implementation("com.google.android.gms:play-services-maps:18.1.0")
     implementation("com.google.maps.android:maps-compose:2.11.2")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
+    implementation("androidx.compose.foundation:foundation:1.5.4")
 
     implementation(libs.retrofit)
     implementation(libs.retrofit.gson)
