@@ -21,12 +21,17 @@ import androidx.navigation.NavController
 import com.example.budgetbuddy.navigation.Screen
 import com.example.budgetbuddy.ui.components.BottomNavBar
 import com.example.budgetbuddy.ui.components.BottomNavTab
+import com.example.budgetbuddy.utils.NetworkStatus
+import com.example.budgetbuddy.utils.observeConnectivity
 import com.example.budgetbuddy.viewmodel.AuthViewModel
 
 @SuppressLint("MissingPermission")
 @Composable
 fun ATMMapScreen(navController: NavController, authViewModel: AuthViewModel, viewModel: ATMViewModel = viewModel()) {
     val context = LocalContext.current
+    val networkStatus by remember(context) { observeConnectivity(context) }.collectAsState(initial = NetworkStatus.Unavailable)
+    val hasInternet = networkStatus is NetworkStatus.Available
+
     val uiState by viewModel.uiState.collectAsState()
     val userLocation = uiState.userLocation
     val atms = uiState.atms
@@ -36,7 +41,7 @@ fun ATMMapScreen(navController: NavController, authViewModel: AuthViewModel, vie
         position = CameraPosition.fromLatLngZoom(userLocation ?: LatLng(0.0, 0.0), 14f)
     }
 
-    //  Se ejecuta al abrir la pantalla, obtiene la ubicación y los ATMs cercanos
+    // Se ejecuta al abrir la pantalla, obtiene la ubicación y los ATMs cercanos
     LaunchedEffect(Unit) {
         viewModel.updateUserLocation(context)
     }
@@ -50,51 +55,63 @@ fun ATMMapScreen(navController: NavController, authViewModel: AuthViewModel, vie
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
-        GoogleMap(
-            modifier = Modifier.fillMaxSize(),
-            cameraPositionState = cameraPositionState
-        ) {
-            // Ubicación del usuario en el mapa
-            userLocation?.let {
-                Marker(
-                    state = MarkerState(position = it),
-                    title = "Tu Ubicación",
-                    snippet = "Estás aquí",
-                    icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)
-                )
-            }
-
-            // Agregar marcadores de los ATMs
-            atms.forEach { atm ->
-                Marker(
-                    state = MarkerState(position = LatLng(atm.latitud, atm.longitud)),
-                    title = atm.nombre,
-                    snippet = atm.direccion,
-                    onClick = {
-                        selectedATM = atm
-                        true
-                    }
-                )
-            }
-        }
-
-        // Muestra la información del ATM seleccionado
-        selectedATM?.let { atm ->
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp)
-                    .align(Alignment.TopCenter),
-                elevation = CardDefaults.cardElevation(8.dp)
+        if (!hasInternet) {
+            // Mostrar mensaje si no hay conexión
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
             ) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    Text(text = "Cajero: ${atm.nombre}", style = MaterialTheme.typography.bodySmall)
-                    Text(text = "Dirección: ${atm.direccion}")
-                    Text(text = "Tipo: ${atm.tipo}")
+                Text(
+                    text = "Connection error, please try again later",
+                    style = MaterialTheme.typography.bodyLarge
+                )
+            }
+        } else {
+            // Mostrar el mapa normalmente
+            GoogleMap(
+                modifier = Modifier.fillMaxSize(),
+                cameraPositionState = cameraPositionState
+            ) {
+                userLocation?.let {
+                    Marker(
+                        state = MarkerState(position = it),
+                        title = "Tu Ubicación",
+                        snippet = "Estás aquí",
+                        icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)
+                    )
+                }
+
+                atms.forEach { atm ->
+                    Marker(
+                        state = MarkerState(position = LatLng(atm.latitud, atm.longitud)),
+                        title = atm.nombre,
+                        snippet = atm.direccion,
+                        onClick = {
+                            selectedATM = atm
+                            true
+                        }
+                    )
+                }
+            }
+
+            selectedATM?.let { atm ->
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp)
+                        .align(Alignment.TopCenter),
+                    elevation = CardDefaults.cardElevation(8.dp)
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Text(text = "Cajero: ${atm.nombre}", style = MaterialTheme.typography.bodySmall)
+                        Text(text = "Dirección: ${atm.direccion}")
+                        Text(text = "Tipo: ${atm.tipo}")
+                    }
                 }
             }
         }
 
+        // Bottom nav
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -113,7 +130,6 @@ fun ATMMapScreen(navController: NavController, authViewModel: AuthViewModel, vie
                     }
                 }
             )
+            }
         }
-
-    }
 }
