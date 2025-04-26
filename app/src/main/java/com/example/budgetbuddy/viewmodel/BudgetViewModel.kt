@@ -43,9 +43,26 @@ class BudgetViewModel : ViewModel() {
                     Toast.makeText(context, "Presupuesto guardado con éxito", Toast.LENGTH_SHORT).show()
                 },
                 onFailure = { error ->
-                    val message = error.message ?: "Error al guardar presupuesto"
-                    Log.e("Budget", "Error al guardar presupuesto: $message")
-                    Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                    // 1) Log completo de la excepción (incluye stacktrace)
+                    Log.e("Budget", "Error al guardar presupuesto", error)
+                    error.printStackTrace()
+
+                    // 2) Si es HttpException, extrae el código y el body de error
+                    val detailedMsg = if (error is retrofit2.HttpException) {
+                        val code = error.code()
+                        val body = try {
+                            error.response()?.errorBody()?.string() ?: "sin body"
+                        } catch (e: Exception) {
+                            "error leyendo body: ${e.message}"
+                        }
+                        "HTTP $code: $body"
+                    } else {
+                        // para otras Exceptions, muestra su mensaje localizado
+                        error.localizedMessage ?: "Error desconocido"
+                    }
+
+                    // 3) Muestra el detalle en un Toast más largo
+                    Toast.makeText(context, detailedMsg, Toast.LENGTH_LONG).show()
                 }
             )
 

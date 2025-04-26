@@ -1,3 +1,8 @@
+package com.example.budgetbuddy.utils
+
+import android.content.Context
+import android.content.SharedPreferences
+
 object CategoryUsagePreferences {
     private const val PREF_NAME = "category_usage_pref"
 

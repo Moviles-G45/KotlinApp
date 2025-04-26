@@ -1,5 +1,6 @@
 package com.example.budgetbuddy.ui.screens
 
+import android.app.DatePickerDialog
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -12,6 +13,7 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -24,18 +26,18 @@ import com.example.budgetbuddy.model.TransactionRequest
 import com.example.budgetbuddy.navigation.Screen
 import com.example.budgetbuddy.ui.components.BottomNavBar
 import com.example.budgetbuddy.ui.components.BottomNavTab
-import com.example.budgetbuddy.ui.components.DatePickerField
 import com.example.budgetbuddy.ui.theme.LightGreenishWhite
 import com.example.budgetbuddy.ui.theme.PrimaryBlue
 import com.example.budgetbuddy.ui.theme.PureWhite
+import com.example.budgetbuddy.utils.CategoryUsagePreferences
 import com.example.budgetbuddy.utils.NetworkStatus
 import com.example.budgetbuddy.utils.observeConnectivity
 import com.example.budgetbuddy.viewmodel.AuthViewModel
 import com.example.budgetbuddy.viewmodel.CategoryViewModel
 import com.example.budgetbuddy.viewmodel.TransactionCacheViewModel
 import com.example.budgetbuddy.viewmodel.TransactionCreateViewModel
-import com.example.budgetbuddy.utils.CategoryUsagePreferences
-import java.time.LocalDate
+import java.text.SimpleDateFormat
+import java.util.*
 
 @Composable
 fun CreateExpenseScreen(
@@ -46,11 +48,11 @@ fun CreateExpenseScreen(
 ) {
     val context = LocalContext.current
     val userToken = authViewModel.getPersistedToken() ?: ""
-    LaunchedEffect(Unit) { categoryViewModel.fetchCategories() }
-    val categories by categoryViewModel.categories.collectAsState()
     val cacheViewModel: TransactionCacheViewModel = viewModel()
 
-    // Estados que se guardan en rotación
+    LaunchedEffect(Unit) { categoryViewModel.fetchCategories() }
+    val categories by categoryViewModel.categories.collectAsState()
+
     var date by rememberSaveable { mutableStateOf("") }
     var categoryName by rememberSaveable { mutableStateOf("") }
     var categoryId by rememberSaveable { mutableStateOf<Int?>(null) }
@@ -74,6 +76,7 @@ fun CreateExpenseScreen(
                 onHomeClick = { navController.navigate(Screen.Home.route) },
                 onAddExpenseClick = { navController.navigate(Screen.AddExpense.route) },
                 onMapClick = { navController.navigate(Screen.Map.route) },
+                onBudgetClick = { navController.navigate(Screen.CreateBudget.route) },
                 onProfileClick = {
                     authViewModel.logout()
                     navController.navigate(Screen.Login.route) {
@@ -129,12 +132,33 @@ fun CreateExpenseScreen(
                 ) {
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // ===== Fecha =====
-                    DatePickerField(
-                        selectedDate = date,
-                        onDateSelected = {
-                            if (LocalDate.parse(it) <= LocalDate.now()) {
-                                date = it
+                    // ===== Date Picker Manual =====
+                    OutlinedTextField(
+                        value = date,
+                        onValueChange = {},
+                        label = { Text("Select Date") },
+                        readOnly = true,
+                        modifier = Modifier.fillMaxWidth(),
+                        trailingIcon = {
+                            IconButton(onClick = {
+                                val calendar = Calendar.getInstance()
+                                val dialog = DatePickerDialog(
+                                    context,
+                                    { _, year, month, dayOfMonth ->
+                                        val selectedCal = Calendar.getInstance()
+                                        selectedCal.set(year, month, dayOfMonth)
+                                        val formatter = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+                                        formatter.timeZone = TimeZone.getDefault()
+                                        date = formatter.format(selectedCal.time)
+                                    },
+                                    calendar.get(Calendar.YEAR),
+                                    calendar.get(Calendar.MONTH),
+                                    calendar.get(Calendar.DAY_OF_MONTH)
+                                )
+                                dialog.datePicker.maxDate = System.currentTimeMillis()
+                                dialog.show()
+                            }) {
+                                Icon(Icons.Default.ArrowDropDown, contentDescription = "Select Date")
                             }
                         }
                     )
