@@ -11,7 +11,7 @@ import okhttp3.Interceptor
 import okhttp3.Request
 
 object ApiClient {
-    private const val BASE_URL = "http://192.168.1.10:8000/"
+    private const val BASE_URL = "http://192.168.1.96:8000/"
 
 
     // Necesitamos acceso al contexto para obtener el token
