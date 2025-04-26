@@ -63,6 +63,8 @@ fun CreateBudgetScreen(
     val total = (needs.roundToInt() + wants.roundToInt() + savings.roundToInt())
     val context = LocalContext.current
 
+    val userToken = authViewModel.getPersistedToken()
+
     Column(modifier = Modifier.fillMaxSize()) {
         // 🔷 Parte superior azul con título
         Box(
@@ -121,7 +123,10 @@ fun CreateBudgetScreen(
                         if (total == 100) {
                             val month = LocalDate.now().monthValue
                             val year = LocalDate.now().year
-                            viewModel.createBudget(context, needs, wants, savings, month, year)
+                            userToken?.let { token ->
+                                viewModel.createBudget(context, needs, wants, savings, month, year, token)
+                            }
+
                         } else {
                             Toast.makeText(context, "Total must be 100%", Toast.LENGTH_SHORT).show()
                         }

@@ -14,32 +14,12 @@ object ApiClient {
     private const val BASE_URL = "https://fastapi-service-185169107324.us-central1.run.app/"
 
 
-    // Necesitamos acceso al contexto para obtener el token
-    lateinit var appContext: Context
-
-    fun init(context: Context) {
-        appContext = context.applicationContext
-    }
     private val loggingInterceptor = HttpLoggingInterceptor().apply {
         level = HttpLoggingInterceptor.Level.BODY
     }
-    private val authInterceptor = Interceptor { chain ->
-        val sessionManager = SessionManager(appContext)
-        val token = sessionManager.fetchToken()
 
-        val originalRequest: Request = chain.request()
-        val newRequest = originalRequest.newBuilder().apply {
-            token?.let {
-                addHeader("Authorization", "Bearer $it")
-            }
-        }.build()
-
-        chain.proceed(newRequest)
-    }
     private val client = OkHttpClient.Builder()
         .addInterceptor(loggingInterceptor)
-        .addInterceptor(authInterceptor)
-
         .build()
 
     val retrofit: Retrofit = Retrofit.Builder()

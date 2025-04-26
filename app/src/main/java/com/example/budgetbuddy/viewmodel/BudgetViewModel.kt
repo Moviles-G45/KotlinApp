@@ -21,7 +21,7 @@ import kotlinx.coroutines.withContext
 class BudgetViewModel : ViewModel() {
     private val repository = BudgetRepository()
 
-    fun createBudget(context: Context, needs: Float, wants: Float, savings: Float, month: Int, year: Int){
+    fun createBudget(context: Context, needs: Float, wants: Float, savings: Float, month: Int, year: Int, token: String){
         viewModelScope.launch {
             val body = BudgetCreate(
                 month = month,
@@ -34,7 +34,7 @@ class BudgetViewModel : ViewModel() {
             )
 
             val result = withContext(Dispatchers.IO) {
-                repository.setBudget(body)
+                repository.setBudget(token, body)
             }
 
             result.fold(
