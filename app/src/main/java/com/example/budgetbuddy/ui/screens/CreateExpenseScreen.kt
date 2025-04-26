@@ -34,6 +34,7 @@ import com.example.budgetbuddy.viewmodel.AuthViewModel
 import com.example.budgetbuddy.viewmodel.CategoryViewModel
 import com.example.budgetbuddy.viewmodel.TransactionCacheViewModel
 import com.example.budgetbuddy.viewmodel.TransactionCreateViewModel
+import com.example.budgetbuddy.utils.CategoryUsagePreferences
 import java.time.LocalDate
 
 @Composable
@@ -63,7 +64,8 @@ fun CreateExpenseScreen(
 
     val hasInternet = networkStatus is NetworkStatus.Available
     val scrollState = rememberScrollState()
-
+    val usageMap = remember { CategoryUsagePreferences.getCategoryUsageMap(context, userToken) }
+    val sortedCategories = categories.sortedByDescending { usageMap[it.id] ?: 0 }
     Scaffold(
         containerColor = LightGreenishWhite,
         bottomBar = {
@@ -157,13 +159,14 @@ fun CreateExpenseScreen(
                             expanded = expanded,
                             onDismissRequest = { expanded = false }
                         ) {
-                            categories.forEach { item ->
+                            sortedCategories.forEach { item ->
                                 DropdownMenuItem(
                                     text = { Text(item.name) },
                                     onClick = {
                                         categoryName = item.name
                                         categoryId = item.id
                                         expanded = false
+                                        CategoryUsagePreferences.incrementCategoryUsage(context, userToken, item.id)
                                     }
                                 )
                             }
