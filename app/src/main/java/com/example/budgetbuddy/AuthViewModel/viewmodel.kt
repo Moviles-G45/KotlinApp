@@ -56,7 +56,11 @@ class AuthViewModel(
     init {
         val persistedToken = sessionManager.fetchToken()
         if (persistedToken != null) {
-            sendTokenToBackend(persistedToken)
+            if (isConnected(appContext)) {
+                sendTokenToBackend(persistedToken)
+            } else {
+                _authState.value = AuthState.Success(AuthResponse("Inicio de sesión exitoso","1" ))
+            }
         } else {
             _authState.value = AuthState.Unauthenticated
         }
