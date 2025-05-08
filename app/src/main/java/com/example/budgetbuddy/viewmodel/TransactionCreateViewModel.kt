@@ -30,5 +30,11 @@ class TransactionCreateViewModel() : ViewModel() {
             )
         }
     }
+
+
+
+    fun clearTransactionResult() {
+        _transactionResult.value=null
+    }
 }
 
