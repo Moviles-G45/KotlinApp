@@ -186,7 +186,7 @@ fun SignUpScreen(navController: NavController, authViewModel: AuthViewModel) {
                     text = when {
                         !hasInternet -> "Try Again"
                         isLoading -> "Loading..."
-                        else -> "Log In"
+                        else -> "Sign up"
                     },
                     fontSize = 16.sp,
                     color = Color.White
