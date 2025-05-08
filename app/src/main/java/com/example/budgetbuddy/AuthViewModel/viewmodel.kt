@@ -71,9 +71,8 @@ class AuthViewModel(
         _authState.value = AuthState.Loading
 
         viewModelScope.launch {
-            val result = withContext(Dispatchers.IO) {
-                repository.signup(user)
-            }
+            val result = repository.signup(user)
+
 
             result.fold(
                 onSuccess = {
