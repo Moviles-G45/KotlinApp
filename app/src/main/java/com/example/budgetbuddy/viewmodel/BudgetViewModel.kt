@@ -27,9 +27,9 @@ class BudgetViewModel : ViewModel() {
                 month = month,
                 year = year,
                 budget_category_types = listOf(
-                    BudgetCategory("4", needs.toInt()),
+                    BudgetCategory("2", needs.toInt()),
                     BudgetCategory("3", wants.toInt()),
-                    BudgetCategory("2", savings.toInt())
+                    BudgetCategory("4", savings.toInt())
                 )
             )
 
