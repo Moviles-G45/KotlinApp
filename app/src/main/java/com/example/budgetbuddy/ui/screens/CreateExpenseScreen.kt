@@ -68,6 +68,21 @@ fun CreateExpenseScreen(
     val scrollState = rememberScrollState()
     val usageMap = remember { CategoryUsagePreferences.getCategoryUsageMap(context, userToken) }
     val sortedCategories = categories.sortedByDescending { usageMap[it.id] ?: 0 }
+
+    val transactionResult by transactionViewModel.transactionResult.collectAsState()
+
+    LaunchedEffect(transactionResult) {
+        transactionResult?.let { result ->
+            result.onSuccess {
+                Toast.makeText(context, "Transaction created!", Toast.LENGTH_SHORT).show()
+                navController.popBackStack()
+            }.onFailure {
+                Toast.makeText(context, "Error creating transaction: ${it.localizedMessage}", Toast.LENGTH_SHORT).show()
+            }
+            transactionViewModel.clearTransactionResult()
+            }
+    }
+
     Scaffold(
         containerColor = LightGreenishWhite,
         bottomBar = {
@@ -274,5 +289,11 @@ fun CreateExpenseScreen(
             }
         }
     }
+
+
+
+
+
+
 }
 
