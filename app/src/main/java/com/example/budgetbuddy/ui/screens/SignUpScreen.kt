@@ -102,19 +102,19 @@ fun SignUpScreen(navController: NavController, authViewModel: AuthViewModel) {
             Spacer(modifier = Modifier.height(50.dp))
 
             // 📝 Campos del formulario
-            CustomTextField(
+            NormalTextField(
                 label = "Full Name",
                 value = fullName,
                 onValueChange = {  if (it.length <= 40) fullName = it })
             formState.fullNameError?.let {
                 Text(text = it, color = Color.Red, fontSize = 12.sp)
             }
-            CustomTextField(label = "Email", value = email, onValueChange = {  if (it.length <= 40) email = it })
+            CustomTextField(label = "EMail", value = email, onValueChange = {  if (it.length <= 40) email = it })
             formState.emailError?.let {
                 Text(text = it, color = Color.Red, fontSize = 12.sp)
             }
             MobileNumberTextField(
-                label = "Número de Móvil",
+                label = "Phone Number",
                 value = mobileNumber,
                 onValueChange = {  if (it.length <= 17) mobileNumber = it })
             formState.mobileError?.let {
@@ -336,5 +336,39 @@ fun MobileNumberTextField(
         )
     }
 }
+
+
+
+
+// 🔹 Función reutilizable para TextFields normales
+@Composable
+fun NormalTextField(label: String, value: String, onValueChange: (String) -> Unit) {
+    Column(modifier = Modifier.padding(horizontal = 20.dp)) {
+        Text(text = label, fontSize = 14.sp, color = Color.Black, fontWeight = FontWeight.Medium)
+        OutlinedTextField(
+            value = value,
+            onValueChange = onValueChange,
+            placeholder = { Text("Mario", color = Color.Gray) },
+            shape = RoundedCornerShape(25.dp),
+            maxLines = 1,
+            singleLine = true,
+            colors = TextFieldDefaults.colors(
+                focusedTextColor = Color.Black,
+                unfocusedTextColor = Color.Black,
+                focusedContainerColor = Color.White,
+                unfocusedContainerColor = Color.White,
+                focusedIndicatorColor = Color.Gray,
+                unfocusedIndicatorColor = Color.LightGray,
+                cursorColor = Color.Black
+            ),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 6.dp)
+                .height(55.dp),
+
+            )
+    }
+}
+
 
 

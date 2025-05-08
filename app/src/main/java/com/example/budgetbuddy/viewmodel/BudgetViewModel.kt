@@ -58,7 +58,7 @@ class BudgetViewModel : ViewModel() {
                         "HTTP $code: $body"
                     } else {
                         // para otras Exceptions, muestra su mensaje localizado
-                        error.localizedMessage ?: "Error desconocido"
+                        "Ya existe el presupuesto"
                     }
 
                     // 3) Muestra el detalle en un Toast más largo
