@@ -73,7 +73,6 @@ class AuthViewModel(
         viewModelScope.launch {
             val result = repository.signup(user)
 
-
             result.fold(
                 onSuccess = {
                     // Si el signup fue exitoso, logueamos automáticamente
