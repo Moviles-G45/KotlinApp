@@ -125,7 +125,7 @@ fun HomeScreen(
             // Banner de última actualización
             if (lastTs > 0L) {
                 Text(
-                    text = "Última actualización: ${DateTimeUtils.formatTimestamp(lastTs)}",
+                    text = "Last update: ${DateTimeUtils.formatTimestamp(lastTs)}",
                     style = MaterialTheme.typography.labelSmall,
                     color = PureWhite,
                     modifier = Modifier.padding(8.dp)

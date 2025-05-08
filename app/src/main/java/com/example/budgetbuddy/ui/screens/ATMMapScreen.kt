@@ -103,9 +103,9 @@ fun ATMMapScreen(navController: NavController, authViewModel: AuthViewModel, vie
                     elevation = CardDefaults.cardElevation(8.dp)
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
-                        Text(text = "Cajero: ${atm.nombre}", style = MaterialTheme.typography.bodySmall)
-                        Text(text = "Dirección: ${atm.direccion}")
-                        Text(text = "Tipo: ${atm.tipo}")
+                        Text(text = "ATM: ${atm.nombre}", style = MaterialTheme.typography.bodySmall)
+                        Text(text = "Address: ${atm.direccion}")
+                        Text(text = "Type: ${atm.tipo}")
                     }
                 }
             }
