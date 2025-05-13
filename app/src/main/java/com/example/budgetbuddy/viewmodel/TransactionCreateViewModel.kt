@@ -8,8 +8,10 @@ import kotlinx.coroutines.flow.StateFlow
 import com.example.budgetbuddy.model.TransactionRequest
 import com.example.budgetbuddy.model.ExpensesCreateRequestResponse
 import com.example.budgetbuddy.repository.ExpensesRepository
+import com.example.budgetbuddy.utils.TransactionMemoryCache
 
-class TransactionCreateViewModel() : ViewModel() {
+
+class TransactionCreateViewModel : ViewModel() {
 
     private val repository = ExpensesRepository()
 
@@ -23,6 +25,11 @@ class TransactionCreateViewModel() : ViewModel() {
             result.fold(
                 onSuccess = { response ->
                     _transactionResult.value = Result.success(response)
+
+                    // Si se creó correctamente, limpiamos el cache por si coincide
+                    if (TransactionMemoryCache.getTransaction() == transaction) {
+                        TransactionMemoryCache.clear()
+                    }
                 },
                 onFailure = { error ->
                     _transactionResult.value = Result.failure(error)
@@ -31,10 +38,12 @@ class TransactionCreateViewModel() : ViewModel() {
         }
     }
 
-
+    fun saveTransactionOffline(transaction: TransactionRequest, categoryName: String): Boolean {
+        return TransactionMemoryCache.saveTransaction(transaction, categoryName)
+    }
 
     fun clearTransactionResult() {
-        _transactionResult.value=null
+        _transactionResult.value = null
     }
 }
 

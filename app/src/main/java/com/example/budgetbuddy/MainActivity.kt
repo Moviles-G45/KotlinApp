@@ -29,12 +29,9 @@ import java.util.concurrent.TimeUnit
 
 import androidx.activity.compose.setContent
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.lifecycleScope
-import androidx.navigation.compose.rememberNavController
-import androidx.work.*
-import com.example.budgetbuddy.navigation.AppNavigation
-import com.example.budgetbuddy.utils.NetworkConnectionObserver
-import com.example.budgetbuddy.viewmodel.TransactionCacheViewModel
+
+import com.example.budgetbuddy.viewmodel.CategoryViewModel
+
 import com.example.budgetbuddy.viewmodel.TransactionCreateViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collect
@@ -46,16 +43,13 @@ import kotlinx.coroutines.withContext
 class MainActivity : ComponentActivity() {
     private val LOCATION_PERMISSION_REQUEST_CODE = 1001
     private val NOTIFICATION_PERMISSION_REQUEST_CODE = 1002
-
-
-    private lateinit var networkConnectionObserver: NetworkConnectionObserver
-    private lateinit var transactionCacheViewModel: TransactionCacheViewModel
     private lateinit var transactionCreateViewModel: TransactionCreateViewModel
 
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
+        val categoryViewModel = ViewModelProvider(this)[CategoryViewModel::class.java]
+        categoryViewModel.loadCategories()
         checkAndRequestPermissions() // ✅ Ahora incluye permisos de notificación
         scheduleWeeklyNotification() // ✅ Programamos la notificación cada viernes a las 2:46 PM
         scheduleMonthlyReport()
@@ -66,45 +60,10 @@ class MainActivity : ComponentActivity() {
             AuthRepository(authService),
             context = this@MainActivity
         )
-        networkConnectionObserver = NetworkConnectionObserver(
-            context = this,
-            onNetworkAvailable = {
-                lifecycleScope.launch(Dispatchers.Main) {
-                    Toast.makeText(applicationContext, "Conexión a Internet detectada", Toast.LENGTH_SHORT).show()
 
-                    val token = authViewModel.getPersistedToken()
-                    if (!token.isNullOrEmpty()) {
-                        launch(Dispatchers.IO) {
-                            transactionCacheViewModel.cachedTransactions.collect { transactionsMap ->
-                                if (transactionsMap.isNotEmpty()) {
-                                    transactionsMap.forEach { (tokenKey, transactionList) ->
-                                        transactionList.forEach { transaction ->
-                                            transactionCreateViewModel.createTransaction(transaction, tokenKey)
-                                        }
-                                    }
-
-                                    withContext(Dispatchers.Main) {
-                                        Toast.makeText(applicationContext, "Transacciones enviadas correctamente", Toast.LENGTH_SHORT).show()
-                                    }
-                                } else {
-                                    withContext(Dispatchers.Main) {
-                                        Toast.makeText(applicationContext, "No hay transacciones para enviar", Toast.LENGTH_SHORT).show()
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        )
-
-
-
-        // Iniciamos la observación de la conexión a la red
-        networkConnectionObserver.startObserving()
 
         // Inicializamos los ViewModels
-        transactionCacheViewModel = ViewModelProvider(this)[TransactionCacheViewModel::class.java]
+
         transactionCreateViewModel = ViewModelProvider(this)[TransactionCreateViewModel::class.java]
 
 
@@ -216,10 +175,6 @@ class MainActivity : ComponentActivity() {
             .enqueueUniquePeriodicWork("MonthlyReport", ExistingPeriodicWorkPolicy.REPLACE, workRequest)
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-        // Detener la observación de la conexión para liberar recursos
-        networkConnectionObserver.stopObserving()
-    }
+
 
 }

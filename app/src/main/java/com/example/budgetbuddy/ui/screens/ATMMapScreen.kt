@@ -43,9 +43,23 @@ fun ATMMapScreen(navController: NavController, authViewModel: AuthViewModel, vie
 
     // Se ejecuta al abrir la pantalla, obtiene la ubicación y los ATMs cercanos
     LaunchedEffect(Unit) {
-        viewModel.updateUserLocation(context)
-    }
+        if (hasInternet) {
+            // Si hay internet, obtenemos la ubicación y los ATMs
+            viewModel.updateUserLocationAndAtms(context)
+        } else {
+            // Si no hay conexión, actualizamos el estado para reflejar la falta de conectividad
 
+        }
+    }
+    LaunchedEffect(hasInternet) {
+        if (hasInternet) {
+            // Si hay conexión, obtenemos los ATMs nuevamente
+            viewModel.updateUserLocationAndAtms(context)
+        } else {
+            // Si no hay internet, mostramos un estado de error o vacío
+
+        }
+    }
     LaunchedEffect(userLocation) {
         userLocation?.let {
             cameraPositionState.animate(
@@ -55,6 +69,7 @@ fun ATMMapScreen(navController: NavController, authViewModel: AuthViewModel, vie
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
+
         if (!hasInternet) {
             // Mostrar mensaje si no hay conexión
             Box(
