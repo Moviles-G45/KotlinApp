@@ -1,4 +1,5 @@
 package com.example.budgetbuddy.ui.screens
+import androidx.compose.ui.graphics.Color
 
 import android.app.DatePickerDialog
 import android.widget.Toast
@@ -22,6 +23,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.example.budgetbuddy.model.CategoryItem
 import com.example.budgetbuddy.model.TransactionRequest
 import com.example.budgetbuddy.navigation.Screen
 import com.example.budgetbuddy.ui.components.BottomNavBar
@@ -31,10 +33,10 @@ import com.example.budgetbuddy.ui.theme.PrimaryBlue
 import com.example.budgetbuddy.ui.theme.PureWhite
 import com.example.budgetbuddy.utils.CategoryUsagePreferences
 import com.example.budgetbuddy.utils.NetworkStatus
+import com.example.budgetbuddy.utils.TransactionMemoryCache
 import com.example.budgetbuddy.utils.observeConnectivity
 import com.example.budgetbuddy.viewmodel.AuthViewModel
 import com.example.budgetbuddy.viewmodel.CategoryViewModel
-import com.example.budgetbuddy.viewmodel.TransactionCacheViewModel
 import com.example.budgetbuddy.viewmodel.TransactionCreateViewModel
 import java.text.SimpleDateFormat
 import java.util.*
@@ -48,10 +50,9 @@ fun CreateExpenseScreen(
 ) {
     val context = LocalContext.current
     val userToken = authViewModel.getPersistedToken() ?: ""
-    val cacheViewModel: TransactionCacheViewModel = viewModel()
 
-    LaunchedEffect(Unit) { categoryViewModel.fetchCategories() }
-    val categories by categoryViewModel.categories.collectAsState()
+
+
 
     var date by rememberSaveable { mutableStateOf("") }
     var categoryName by rememberSaveable { mutableStateOf("") }
@@ -65,12 +66,18 @@ fun CreateExpenseScreen(
         .collectAsState(initial = NetworkStatus.Unavailable)
 
     val hasInternet = networkStatus is NetworkStatus.Available
+    LaunchedEffect(Unit) {
+        categoryViewModel.loadCategories()
+    }
+
+    val categories by categoryViewModel.categories.collectAsState()
     val scrollState = rememberScrollState()
     val usageMap = remember { CategoryUsagePreferences.getCategoryUsageMap(context, userToken) }
     val sortedCategories = categories.sortedByDescending { usageMap[it.id] ?: 0 }
-
     val transactionResult by transactionViewModel.transactionResult.collectAsState()
+    val categoryCount by categoryViewModel.categoryCount.collectAsState()
 
+    val hasCachedTransaction = TransactionMemoryCache.hasTransaction()
     LaunchedEffect(transactionResult) {
         transactionResult?.let { result ->
             result.onSuccess {
@@ -83,6 +90,13 @@ fun CreateExpenseScreen(
             }
     }
 
+    fun clearFormFields() {
+        amount = ""
+        title = ""
+        date = ""
+        categoryId = null
+        categoryName = ""
+    }
     Scaffold(
         containerColor = LightGreenishWhite,
         bottomBar = {
@@ -194,11 +208,25 @@ fun CreateExpenseScreen(
                                 }
                             }
                         )
+
+                        // Observar el flujo de categorías
+                        val categoriesFromDb by categoryViewModel.categories.collectAsState()
+
+                        // Verificar si hay internet y usar las categorías correspondientes
+                        val categoriesToShow = if (hasInternet) {
+                            sortedCategories // Usar las categorías cargadas del backend
+                        } else {
+                            // Si no hay internet, usar las categorías desde el flujo
+                            categoriesFromDb.map { category ->
+                                CategoryItem(category.id, category.name)
+                            }
+                        }
+
                         DropdownMenu(
                             expanded = expanded,
                             onDismissRequest = { expanded = false }
                         ) {
-                            sortedCategories.forEach { item ->
+                            categoriesToShow.forEach { item ->
                                 DropdownMenuItem(
                                     text = { Text(item.name) },
                                     onClick = {
@@ -211,6 +239,9 @@ fun CreateExpenseScreen(
                             }
                         }
                     }
+
+
+
 
                     Spacer(modifier = Modifier.height(10.dp))
 
@@ -243,19 +274,14 @@ fun CreateExpenseScreen(
                     Spacer(modifier = Modifier.height(10.dp))
 
                     // ===== Mensaje =====
-                    OutlinedTextField(
-                        value = message,
-                        onValueChange = { if (it.length <= 25) message = it },
-                        label = { Text("Enter Message") },
-                        modifier = Modifier.fillMaxWidth()
-                    )
-
-                    Spacer(modifier = Modifier.height(20.dp))
+                    //Lo borre je ;)
 
                     // ===== Botón Guardar =====
                     Button(
                         onClick = {
                             val parsedAmount = amount.toDoubleOrNull() ?: 0.0
+
+                            // Verificar si todos los campos están llenos
                             if (date.isNotEmpty() && categoryId != null && parsedAmount > 0 && title.isNotEmpty()) {
                                 val transaction = TransactionRequest(
                                     date = date,
@@ -263,15 +289,32 @@ fun CreateExpenseScreen(
                                     amount = parsedAmount,
                                     description = title
                                 )
-                                if (!hasInternet) {
-                                    cacheViewModel.saveTransactionToCache(userToken, transaction)
-                                    Toast.makeText(context, "Transaction saved locally!", Toast.LENGTH_SHORT).show()
-                                } else {
+
+                                if (hasInternet) {
+                                    // Guardar en el servidor
                                     transactionViewModel.createTransaction(transaction, userToken)
                                     Toast.makeText(context, "Transaction Created!", Toast.LENGTH_SHORT).show()
+                                    navController.navigate(Screen.Home.route)
+                                    clearFormFields()
+                                } else {
+                                    // No hay internet: verificar si ya hay algo en caché
+                                    if (TransactionMemoryCache.hasTransaction()) {
+                                        Toast.makeText(context, "Cannot save, there's already a transaction in cache!", Toast.LENGTH_SHORT).show()
+                                    } else {
+                                        val saved = transactionViewModel.saveTransactionOffline(transaction, categoryName)
+                                        if (saved) {
+                                            Toast.makeText(context, "Transaction saved locally!", Toast.LENGTH_SHORT).show()
+                                            navController.navigate(Screen.Home.route)
+                                        } else {
+                                            Toast.makeText(context, "Error saving locally", Toast.LENGTH_SHORT).show()
+                                        }
+                                    }
                                 }
-                                navController.popBackStack()
+
+
+
                             } else {
+                                // Si los campos no están completos, mostrar un mensaje de error
                                 Toast.makeText(context, "Please fill all fields", Toast.LENGTH_SHORT).show()
                             }
                         },
@@ -284,12 +327,54 @@ fun CreateExpenseScreen(
                         )
                     }
 
+
+
                     Spacer(modifier = Modifier.height(20.dp))
+                    // ===== Botón Cache =====
+                    Button(
+                        onClick = {
+                            val cached = TransactionMemoryCache.getTransaction()
+                            val cachedCategoryName = TransactionMemoryCache.getCategoryName()
+                            if (cached != null) {
+                                // Cargar los valores del caché en los campos del cuestionario
+                                amount = cached.amount.toString()
+                                title = cached.description
+                                categoryId = cached.category_id
+                                date = cached.date
+                                categoryName = cachedCategoryName ?: ""
+
+
+                                Toast.makeText(context, "Transaction restored from cache!", Toast.LENGTH_SHORT).show()
+
+                                // Borrar el caché después de restaurar los datos
+                                TransactionMemoryCache.clear()
+                            } else {
+                                // Si no hay transacción en el caché
+                                Toast.makeText(context, "No cached transaction found.", Toast.LENGTH_SHORT).show()
+                            }
+                        },
+                        enabled = TransactionMemoryCache.hasTransaction() && hasInternet,  // Solo habilitar el botón si hay algo en caché
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 8.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = if (TransactionMemoryCache.hasTransaction()) PrimaryBlue else Color.Gray
+                        )
+                    ) {
+                        Text(
+                            text = "Restore cached transaction",
+                            color = PureWhite
+                        )
+                    }
+
+
+
+
+
                 }
             }
         }
     }
-
 
 
 
