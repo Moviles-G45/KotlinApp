@@ -36,7 +36,7 @@ object ValidationUtils {
 
 
     fun isValidPassword(password: String): Boolean {
-        return password.length in 5..20 && password.any { it.isDigit() } && password.any { it.isUpperCase() }
+        return password.length in 6..20
     }
 
     fun doPasswordsMatch(p1: String, p2: String): Boolean {

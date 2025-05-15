@@ -79,7 +79,14 @@ class AuthViewModel(
                     login(user.email, user.password)
                 },
                 onFailure = {
-                    _authState.value = AuthState.Error(it.message ?: "Error desconocido")
+                        ex ->
+                    val raw = ex.message.orEmpty()
+                    val friendly = if ("EMAIL_EXISTS" in raw) {
+                        "This email has already been used"
+                    } else {
+                        raw
+                    }
+                    _authState.value = AuthState.Error(friendly)
                 }
             )
         }
@@ -227,7 +234,7 @@ class AuthViewModel(
             emailError = if (!ValidationUtils.isValidEmail(email)) "Invalid email address" else null,
             mobileError = if (!ValidationUtils.isValidPhone(mobile)) "Invalid mobile number" else null,
             dobError = if (!ValidationUtils.isValidDateOfBirth(dob)) "Invalid date (must be YYYY-MM-DD and at least 1 year ago)" else null,
-            passwordError = if (!ValidationUtils.isValidPassword(password)) "Password must be at least 8 characters, with one uppercase letter and one number" else null,
+            passwordError = if (!ValidationUtils.isValidPassword(password)) "Password must be at least 6" else null,
             confirmPasswordError = if (!ValidationUtils.doPasswordsMatch(password, confirmPassword)) "Passwords do not match" else null
         )
     }

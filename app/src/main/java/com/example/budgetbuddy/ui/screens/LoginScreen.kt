@@ -33,6 +33,7 @@ import com.example.budgetbuddy.utils.ValidationUtils
 import com.example.budgetbuddy.viewmodel.AuthState
 import com.example.budgetbuddy.viewmodel.AuthViewModel
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.platform.LocalContext
 import com.example.budgetbuddy.utils.NetworkStatus
 import com.example.budgetbuddy.utils.isConnected
@@ -163,9 +164,10 @@ fun LoginScreen(navController: NavController, authViewModel: AuthViewModel) {
                     textAlign = TextAlign.Center
                 )
             }
-            Spacer(modifier = Modifier.height(10.dp))
-            TextButton(onClick = { navController.navigate(Screen.ForgotPassword.route) }) {
-                Text(text = "Forgot Password?", fontSize = 14.sp, color = Color.Black)
+            Spacer(modifier = Modifier.height(30.dp))
+            Row {
+                Text(text = "Don't have an account?", fontSize = 14.sp, color = Color.Black)
+                Spacer(modifier = Modifier.width(4.dp))
             }
 
 
@@ -182,16 +184,21 @@ fun LoginScreen(navController: NavController, authViewModel: AuthViewModel) {
                 Text(text = "Sign Up", fontSize = 16.sp)
             }
 
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(30.dp))
 
-            // Sign Up Link
-            Row {
-                Text(text = "Don't have an account?", fontSize = 14.sp, color = Color.Gray)
-                Spacer(modifier = Modifier.width(4.dp))
-                Text(text = "Sign Up", fontSize = 14.sp, color = Color.Blue, fontWeight = FontWeight.Bold, modifier = Modifier.clickable {
-                    navController.navigate(Screen.SignUp.route)
-                })
-            }
+
+            Text(
+                text = "Forgot Password?",
+                fontSize = 14.sp,
+                color = if (hasInternet) Color.Blue else Color.Gray,
+                modifier = Modifier
+                    .clickable(
+                        enabled = hasInternet,
+                        onClick = { navController.navigate(Screen.ForgotPassword.route) }
+                    )
+                    .padding(0.dp)
+                    .alpha(if (hasInternet) 1f else 0.4f)
+            )
         }
     }
 }

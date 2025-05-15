@@ -18,6 +18,7 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -95,7 +96,7 @@ fun SignUpScreen(navController: NavController, authViewModel: AuthViewModel) {
                     shape = RoundedCornerShape(topStart = 50.dp, topEnd = 50.dp)
                 )
                 .padding(horizontal = 16.dp)
-                .verticalScroll(scrollState) // 🔹 Habilitar scroll
+                .verticalScroll(scrollState)
                 .navigationBarsPadding(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -109,12 +110,12 @@ fun SignUpScreen(navController: NavController, authViewModel: AuthViewModel) {
             formState.fullNameError?.let {
                 Text(text = it, color = Color.Red, fontSize = 12.sp)
             }
-            CustomTextField(label = "EMail", value = email, onValueChange = {  if (it.length <= 40) email = it })
+            CustomTextField(label = "Email", value = email, onValueChange = {  if (it.length <= 40) email = it })
             formState.emailError?.let {
                 Text(text = it, color = Color.Red, fontSize = 12.sp)
             }
             MobileNumberTextField(
-                label = "Phone Number",
+                label = "Mobile Number",
                 value = mobileNumber,
                 onValueChange = {  if (it.length <= 17) mobileNumber = it })
             formState.mobileError?.let {
@@ -221,19 +222,29 @@ fun SignUpScreen(navController: NavController, authViewModel: AuthViewModel) {
             Spacer(modifier = Modifier.height(10.dp))
 
             // 🔹 Texto "Already have an account? Log In"
-            Row {
-                Text(text = "Already have an account?", fontSize = 14.sp, color = Color.Gray)
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Already have an account?",
+                    fontSize = 14.sp,
+                    color = Color.Gray
+                )
                 Spacer(modifier = Modifier.width(4.dp))
                 Text(
-                    text = "Log In",
-                    fontSize = 14.sp,
-                    color = Color.Blue,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.clickable {
-                        navController.navigate(Screen.Login.route)
-                    }
+                    text = "Log in",
+                    fontSize = 16.sp,
+                    color = if (hasInternet) Color.Blue else Color.Gray,       // cambia el color si no hay internet
+                    modifier = Modifier
+                        .clickable(
+                            enabled = hasInternet,                            // aquí reaplicamos el flag
+                            onClick = { navController.navigate(Screen.Login.route) }
+                        )
+                        .padding(0.dp)                                        // quita el padding extra de TextButton
+                        .alpha(if (hasInternet) 1f else 0.4f)                // opcional: atenúa si está deshabilitado
                 )
             }
+
 
             Spacer(modifier = Modifier.height(50.dp))
         }
