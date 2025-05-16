@@ -70,7 +70,7 @@ class AuthViewModel(
     fun signup(user: UserRequest) {
         _authState.value = AuthState.Loading
 
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             val result = repository.signup(user)
 
             result.fold(

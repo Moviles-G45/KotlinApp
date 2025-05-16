@@ -8,7 +8,7 @@ import java.time.Period
 object ValidationUtils {
 
     fun isValidName(name: String): Boolean {
-        return name.trim().length in 3..50
+        return name.trim().length in 1..50
     }
 
     fun isValidEmail(email: String): Boolean {
