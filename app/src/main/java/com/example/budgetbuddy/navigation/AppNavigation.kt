@@ -14,6 +14,7 @@ import com.example.budgetbuddy.ui.screens.ForgotPasswordScreen
 import com.example.budgetbuddy.ui.screens.HomeScreen
 import com.example.budgetbuddy.ui.screens.SplashScreen
 import com.example.budgetbuddy.ui.screens.ATMMapScreen
+import com.example.budgetbuddy.ui.screens.CategoryListScreen
 import com.example.budgetbuddy.ui.screens.CreateBudgetScreen
 import com.example.budgetbuddy.viewmodel.AuthViewModel
 import com.example.budgetbuddy.viewmodel.BudgetViewModel
@@ -28,7 +29,7 @@ sealed class Screen(val route: String) {
     object AddExpense : Screen("add_expense")
     object Map : Screen("map")
     object CreateBudget : Screen("create_budget")
-
+    object CategoryList : Screen("category_list")
 }
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -44,6 +45,7 @@ fun AppNavigation(navController: NavHostController, authViewModel: AuthViewModel
         composable(Screen.AddExpense.route) { CreateExpenseScreen(navController, authViewModel) }
         composable(Screen.Map.route) { ATMMapScreen(navController, authViewModel) }
         composable(Screen.CreateBudget.route) { CreateBudgetScreen(navController,authViewModel )}
-        }
+        composable(Screen.CategoryList.route) { CategoryListScreen(navController, authViewModel) }
+    }
 
     }

@@ -104,7 +104,6 @@ fun HomeScreen(
     val needsSpent by transactionViewModel.needsSpent
     val wantsSpent by transactionViewModel.wantsSpent
     val savingsSpent by transactionViewModel.savingsSpent
-
     // Saludo según la hora
     val greeting = remember {
         val hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
@@ -223,6 +222,17 @@ fun HomeScreen(
                     )
 
                     Spacer(modifier = Modifier.height(8.dp))
+                    Button(
+                        onClick = { navController.navigate(Screen.CategoryList.route) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 32.dp)
+                    ) {
+                        Text("View list categories")
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
 
                     val pct = if (totalIncome != 0.0) ((totalExpense / totalIncome) * 100).toInt() else 0
                     Text(
