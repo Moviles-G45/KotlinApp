@@ -14,7 +14,8 @@ class ExpensesRepository() {
 
     suspend fun addTransaction(transaction: TransactionRequest, token: String): Result<ExpensesCreateRequestResponse> {
         return try {
-            val response = expensesService.addTransaction(transaction, "Bearer $token")
+            val authHeader = "Bearer $token"
+            val response = expensesService.addTransaction(transaction, authHeader)
             if (response.isSuccessful) {
                 response.body()?.let {
                     Result.success(it)

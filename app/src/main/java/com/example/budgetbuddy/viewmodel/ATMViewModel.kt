@@ -6,6 +6,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.budgetbuddy.model.ATM
 import com.example.budgetbuddy.repository.ATMRepository
+import com.example.budgetbuddy.storage.database.ATMDatabase
+import com.example.budgetbuddy.storage.database.toEntity
+import com.example.budgetbuddy.storage.database.toModel
 import com.example.budgetbuddy.utils.LocationHelper
 import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.Dispatchers
@@ -30,32 +33,36 @@ class ATMViewModel : ViewModel() {
     fun updateUserLocationAndAtms(context: Context) {
         viewModelScope.launch(Dispatchers.Main) {
             try {
-                // Primero obtenemos la ubicación
+                // Obtener ubicación del usuario
                 val locationDeferred = async(Dispatchers.IO) {
                     val locationHelper = LocationHelper(context)
-                    locationHelper.getCurrentLocation() // Operación I/O
+                    locationHelper.getCurrentLocation()
                 }
 
-                // Esperamos a que la ubicación esté disponible
                 val location: Location? = locationDeferred.await()
 
-                // Si la ubicación es válida, obtenemos los ATMs cercanos
                 location?.let { userLocation ->
-                    // Convertimos Location a LatLng
                     val userLatLng = LatLng(userLocation.latitude, userLocation.longitude)
 
-                    val atmsDeferred = async(Dispatchers.IO) {
-                        val atmList = atmRepository.getNearbyATMs(userLatLng.latitude, userLatLng.longitude)
-                        atmList // Lista de ATMs obtenida desde el repositorio
-                    }
+                    val atms = async(Dispatchers.IO) {
+                        val db = ATMDatabase.getInstance(context)
+                        val atmDao = db.atmDao()
 
-                    // Esperamos los ATMs
-                    val atms = atmsDeferred.await()
+                        // Intentar primero obtener ATMs remoto
+                        try {
+                            val remoteATMs = atmRepository.getNearbyATMs(userLatLng.latitude, userLatLng.longitude)
+                            atmDao.insertAll(remoteATMs.map { it.toEntity() })
+                            remoteATMs
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                            // Si falla la red, obtener ATMs de Room
+                            val localATMs = atmDao.getAll()
+                            localATMs.map { it.toModel() }
+                        }
+                    }.await()
 
-                    // Actualizamos el estado con los datos obtenidos
                     _uiState.value = ATMUiState(userLocation = userLatLng, atms = atms)
                 } ?: run {
-                    // Si la ubicación es nula, tiramos error
                     _uiState.value = ATMUiState()
                 }
             } catch (e: Exception) {
@@ -63,4 +70,5 @@ class ATMViewModel : ViewModel() {
             }
         }
     }
+
 }
