@@ -28,6 +28,11 @@ import com.example.budgetbuddy.viewmodel.AuthViewModel
 import com.example.budgetbuddy.viewmodel.BudgetViewModel
 import java.time.LocalDate
 import kotlin.math.roundToInt
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.text.style.TextAlign
+import com.example.budgetbuddy.utils.NetworkStatus
+import com.example.budgetbuddy.utils.isConnected
+import com.example.budgetbuddy.utils.observeConnectivity
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
@@ -42,6 +47,10 @@ fun CreateBudgetScreen(
     val total = needs.roundToInt() + wants.roundToInt() + savings.roundToInt()
     val context = LocalContext.current
     val userToken = authViewModel.getPersistedToken()
+    val networkStatus by remember(context) { observeConnectivity(context) }
+        .collectAsState(initial = NetworkStatus.Unavailable)
+
+    val hasInternet = networkStatus is NetworkStatus.Available
 
     Scaffold(
         containerColor = LightGreenishWhite,
@@ -121,6 +130,11 @@ fun CreateBudgetScreen(
 
                     Button(
                         onClick = {
+
+                            if (!hasInternet) {
+                                // No intentes loguear si no hay internet
+                                return@Button
+                            }
                             if (total == 100) {
                                 val month = LocalDate.now().monthValue
                                 val year = LocalDate.now().year
@@ -143,11 +157,31 @@ fun CreateBudgetScreen(
                                 ).show()
                             }
                         },
-                        enabled = total == 100,
+                        enabled = hasInternet, // ⛔ desactiva si no hay internet
                         shape = RoundedCornerShape(50),
-                        colors = ButtonDefaults.buttonColors(containerColor = PrimaryBlue)
+                        colors = ButtonDefaults.buttonColors(containerColor = PrimaryBlue,
+                            disabledContainerColor = Color(0xFFA7C0DA))
                     ) {
-                        Text(text = "Save", fontSize = 16.sp)
+
+                        Text(
+                            text = when {
+                                !hasInternet -> "Try Again"
+                                else -> "Save"
+                            },
+                            fontSize = 16.sp,
+                            color = Color.White
+                        )
+                    }
+
+
+                    if (!hasInternet) {
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = "No internet connection. Please check your network.",
+                            color = Color.Red,
+                            fontSize = 14.sp,
+                            textAlign = TextAlign.Center
+                        )
                     }
                 }
             }
