@@ -27,7 +27,6 @@ import com.example.budgetbuddy.ui.components.BottomNavTab
 import com.example.budgetbuddy.ui.components.FilterPanel
 import com.example.budgetbuddy.ui.components.FilterType
 import com.example.budgetbuddy.ui.components.OfflineBanner
-import com.example.budgetbuddy.ui.components.SavingsPanel
 import com.example.budgetbuddy.ui.theme.DarkGreen
 import com.example.budgetbuddy.ui.theme.DarkTeal
 import com.example.budgetbuddy.ui.theme.LightGreenishWhite
@@ -100,9 +99,6 @@ fun CategoryTransactionsScreen(
     val totalExpense by transactionViewModel.totalExpense //
     val totalBalance by transactionViewModel.totalBalance //
     val totalIncome by transactionViewModel.totalIncome //
-    val needsSpent by transactionViewModel.needsSpent //
-    val wantsSpent by transactionViewModel.wantsSpent //
-    val savingsSpent by transactionViewModel.savingsSpent //
 
     Box(modifier = Modifier.fillMaxSize()) { //
         Column(
@@ -235,15 +231,6 @@ fun CategoryTransactionsScreen(
                 Column(modifier = Modifier.fillMaxSize()) { //
                     Spacer(Modifier.height(16.dp)) //
 
-                    SavingsPanel( //
-                        totalIncome = totalIncome,
-                        savingsSpent = savingsSpent,
-                        needsSpent = needsSpent,
-                        wantsSpent = wantsSpent
-                    )
-
-                    Spacer(Modifier.height(16.dp)) //
-
                     FilterPanel( //
                         selectedFilter = selectedFilter,
                         onFilterSelected = { filter -> updateTransactionsForCategory(filter) }
@@ -293,23 +280,7 @@ fun CategoryTransactionsScreen(
                                                 color = NeonGreen // Should be DarkGreen or similar for date, NeonGreen might be too bright for secondary info
                                             )
                                         }
-                                        Box(
-                                            modifier = Modifier
-                                                .width(1.dp) //
-                                                .height(40.dp) //
-                                                .background(Color(0xFF00D09E)) //
-                                        )
-                                        // Category name can be omitted here or shown differently as we are already in a category screen
-                                        // For consistency with HomeScreen, it's kept.
-                                        Text(
-                                            text = tx.category.name, //
-                                            style = MaterialTheme.typography.labelMedium, //
-                                            color = DarkGreen, //
-                                            modifier = Modifier
-                                                .weight(1f) //
-                                                .padding(horizontal = 8.dp) //
-                                                .align(Alignment.CenterVertically) //
-                                        )
+
                                         Box(
                                             modifier = Modifier
                                                 .width(1.dp) //
