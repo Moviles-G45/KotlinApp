@@ -10,6 +10,7 @@ data class TransactionEntity(
     val date: String,
     val amount: Double,
     val description: String,
+    val categoryId: Int,
     val categoryName: String,
     val categoryTypeId: Int
 )

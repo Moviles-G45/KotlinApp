@@ -13,7 +13,8 @@ interface TransactionService {
     suspend fun getTransactions(
         @Header("Authorization") authToken: String,
         @Query("startDate") startDate: String? = null,
-        @Query("endDate") endDate: String? = null
+        @Query("endDate") endDate: String? = null,
+        @Query("category") categoryId: Int? = null,
     ): List<Transaction>
 
     @GET("transactions/total_spent")

@@ -7,10 +7,10 @@ import com.example.budgetbuddy.storage.database.TransactionEntity
 
 fun Transaction.toEntity() = TransactionEntity(
     id, date, amount.toDouble(), description,
-    category.name, category.category_type.id
+    category.id, category.name, category.category_type.id
 )
 
 fun TransactionEntity.toModel() = Transaction(
     id, date, amount.toString(), description,
-    Category(categoryName, CategoryType(categoryTypeId))
+    Category(categoryId, categoryName, CategoryType(categoryTypeId))
 )
