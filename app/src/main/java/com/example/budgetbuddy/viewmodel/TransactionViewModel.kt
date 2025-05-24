@@ -42,14 +42,14 @@ class TransactionViewModel(application: Application) : AndroidViewModel(applicat
     private val _lastUpdated = mutableStateOf(0L)
     val lastUpdated: State<Long> get() = _lastUpdated
 
-    fun fetchTransactions(token: String, startDate: String? = null, endDate: String? = null) {
+    fun fetchTransactions(token: String, startDate: String? = null, endDate: String? = null, categoryId: Int? = null) {
         val calendar = Calendar.getInstance()
         val year = calendar.get(Calendar.YEAR)
         val month = calendar.get(Calendar.MONTH) + 1
 
         viewModelScope.launch {
             if (isConnected(ctx)) {
-                val remoteTrans = repository.fetchTransactionsNetworkFirst(token, startDate, endDate)
+                val remoteTrans = repository.fetchTransactionsNetworkFirst(token, startDate, endDate, categoryId)
                 _transactions.value = remoteTrans
 
 
@@ -64,7 +64,7 @@ class TransactionViewModel(application: Application) : AndroidViewModel(applicat
 
                 _lastUpdated.value = sessionManager.fetchLastSync()
             } else {
-                _transactions.value = repository.getTransactionsFromDb()
+                _transactions.value = repository.getTransactionsFromDb(categoryId)
                 repository.getBalanceFromDb(year, month)?.let {
                     _totalBalance.value = it.balance
                     _totalIncome.value = it.total_earnings

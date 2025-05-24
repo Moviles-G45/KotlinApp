@@ -31,7 +31,7 @@ import com.example.budgetbuddy.viewmodel.TransactionViewModel
 import com.example.budgetbuddy.utils.DateTimeUtils
 import java.util.Calendar
 import androidx.compose.ui.res.painterResource
-
+import com.example.budgetbuddy.model.Category // Assuming this model or similar from CategoryViewModel
 
 @Composable
 fun CategoryListScreen(
@@ -42,16 +42,15 @@ fun CategoryListScreen(
 ) {
     val userToken = authViewModel.getPersistedToken()
 
-    // Última sincronización
     val lastTs by transactionViewModel.lastUpdated
 
     LaunchedEffect(userToken) {
         userToken?.let {
             val now = Calendar.getInstance()
             now.set(Calendar.DAY_OF_MONTH, 1)
-            val startDate = formatDate(now)
+            val startDate = formatttDate(now)
             now.add(Calendar.MONTH, 1)
-            val endDate = formatDate(now)
+            val endDate = formatttDate(now)
             categoryViewModel.loadCategories()
             transactionViewModel.fetchTransactions(it, startDate, endDate)
         }
@@ -96,7 +95,6 @@ fun CategoryListScreen(
                         horizontalArrangement = Arrangement.SpaceAround,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        // Total Balance
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Icon(
@@ -118,7 +116,6 @@ fun CategoryListScreen(
                             )
                         }
 
-                        // Divisor
                         Box(
                             modifier = Modifier
                                 .fillMaxHeight()
@@ -126,7 +123,6 @@ fun CategoryListScreen(
                                 .background(Color.White)
                         )
 
-                        // Total Expense
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Icon(
@@ -144,7 +140,7 @@ fun CategoryListScreen(
                             Text(
                                 text = "-$${totalExpense}",
                                 style = MaterialTheme.typography.headlineMedium,
-                                color = Color(0xFF39FF14) // NeonGreen aproximado
+                                color = Color(0xFF39FF14)
                             )
                         }
                     }
@@ -169,25 +165,32 @@ fun CategoryListScreen(
                         shape = RoundedCornerShape(topStart = 50.dp, topEnd = 50.dp)
                     )
             ) {
-                // Aquí directamente LazyVerticalGrid y BottomNavBar dentro del Box
                 LazyVerticalGrid(
                     columns = GridCells.Fixed(2),
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(16.dp)
-                        .padding(bottom = 56.dp), // espacio para la barra
+                        .padding(bottom = 56.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     items(categories) { category ->
+                        val categoryIdToUse = if (category.id != 0) category.id else 1
                         Column(
                             horizontalAlignment = Alignment.CenterHorizontally,
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .aspectRatio(1f) // cuadrado
+                                .aspectRatio(1f)
                                 .clip(MaterialTheme.shapes.medium)
                                 .background(Color(0xFFE0F2F1))
-                                .clickable { /*navController.navigate("categoryDetail/${category.id}") */} //Aqui pones ls ruta
+                                .clickable {
+                                    navController.navigate(
+                                        Screen.CategoryTransactions.createRoute(
+                                            categoryId = categoryIdToUse, // Use appropriate ID field
+                                            categoryName = category.name
+                                        )
+                                    )
+                                }
                                 .padding(8.dp)
                         ) {
                             Spacer(modifier = Modifier.height(8.dp))
@@ -206,7 +209,7 @@ fun CategoryListScreen(
                 ) {
                     BottomNavBar(
 
-                        selectedTab = BottomNavTab.HOME,
+                        selectedTab = BottomNavTab.HOME, // Or a dedicated tab for categories
                         onHomeClick = { navController.navigate(Screen.Home.route) },
                         onAddExpenseClick = { navController.navigate(Screen.AddExpense.route) },
                         onMapClick = { navController.navigate(Screen.Map.route) },
@@ -225,3 +228,9 @@ fun CategoryListScreen(
     }
 }
 
+private fun formatttDate(calendar: Calendar): String {
+    val y = calendar.get(Calendar.YEAR)
+    val m = calendar.get(Calendar.MONTH) + 1
+    val d = calendar.get(Calendar.DAY_OF_MONTH)
+    return "%04d-%02d-%02d".format(y, m, d)
+}

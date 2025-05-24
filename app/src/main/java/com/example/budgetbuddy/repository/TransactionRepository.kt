@@ -25,13 +25,15 @@ class TransactionRepository(context: Context) {
     suspend fun fetchTransactionsNetworkFirst(
         authToken: String,
         startDate: String? = null,
-        endDate: String? = null
+        endDate: String? = null,
+        categoryId: Int? = null
     ): List<Transaction> {
         return try {
             val remote = transactionService.getTransactions(
                 authToken = "Bearer $authToken",
                 startDate = startDate,
-                endDate = endDate
+                endDate = endDate,
+                categoryId = categoryId
             )
 
             dao.clearAll()
@@ -40,7 +42,12 @@ class TransactionRepository(context: Context) {
             session.saveLastSync(System.currentTimeMillis())
             remote
         } catch (e: Exception) {
-            dao.getAll().map { it.toModel() }
+            val localTransactions = dao.getAll().map { it.toModel() }
+            if (categoryId != null) {
+                localTransactions.filter { it.category.id == categoryId }
+            } else {
+                localTransactions
+            }
         }
     }
 
@@ -66,8 +73,14 @@ class TransactionRepository(context: Context) {
         }
     }
 
-    suspend fun getTransactionsFromDb(): List<Transaction> =
-        dao.getAll().map { it.toModel() }
+    suspend fun getTransactionsFromDb(categoryId: Int? = null): List<Transaction> {
+        val transactions = dao.getAll().map { it.toModel() }
+        return if (categoryId != null) {
+            transactions.filter { it.category.id == categoryId }
+        } else {
+            transactions
+        }
+    }
 
     suspend fun getBalanceFromDb(year: Int, month: Int): Balance? {
         val key = "%04d-%02d".format(year, month)

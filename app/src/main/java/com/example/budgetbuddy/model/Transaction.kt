@@ -9,6 +9,7 @@ data class Transaction(
 )
 
 data class Category(
+    val id: Int,
     val name: String,
     val category_type: CategoryType
 )
