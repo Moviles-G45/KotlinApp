@@ -1,8 +1,9 @@
 package com.example.budgetbuddy.viewmodel
 
 import android.app.Application
-import android.util.Log
-import android.widget.Toast
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.withContext
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.budgetbuddy.model.CategoryItem
@@ -26,29 +27,38 @@ class CategoryViewModel(application: Application) : AndroidViewModel(application
 
     // Cargar categorías
     fun loadCategories() {
-        viewModelScope.launch {
+        // Primero: tareas en IO
+        viewModelScope.launch(Dispatchers.IO) {
             try {
-                val result = repository.getCategories()
-                _categories.value = result
-
+                val networkCategories = repository.getCategories()
                 val existingCategories = categoryDao.getAll()
-                _categoryCount.value = existingCategories.size
 
                 if (existingCategories.isEmpty()) {
-                    val categoryEntities = result.map { it.toCategoryEntity() }
-                    val insertedIds = categoryDao.insertAll(categoryEntities)
-                    _categoryCount.value = insertedIds.size
+                    val categoryEntities = networkCategories.map { it.toCategoryEntity() }
+                    categoryDao.insertAll(categoryEntities)
+                }
+
+                // Luego volvemos a Main para actualizar la UI
+                viewModelScope.launch(Dispatchers.Main) {
+                    _categories.value = networkCategories
+                    _categoryCount.value = existingCategories.size
                 }
 
             } catch (e: Exception) {
-                val localCategories = categoryDao.getAll().map { entity ->
-                    CategoryItem(entity.id, entity.name)
+                // Si falla la red, cargamos desde la base local en IO
+                val localCategories = categoryDao.getAll().map {
+                    CategoryItem(it.id, it.name)
                 }
-                _categories.value = localCategories
 
+                // Luego pasamos los datos al Main
+                viewModelScope.launch(Dispatchers.Main) {
+                    _categories.value = localCategories
+                    _categoryCount.value = localCategories.size
+                }
             }
         }
     }
+
 
 
     // Conversión de CategoryItem a CategoryEntity

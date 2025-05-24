@@ -1,5 +1,4 @@
 package com.example.budgetbuddy.viewmodel
-
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
@@ -9,6 +8,8 @@ import com.example.budgetbuddy.model.TransactionRequest
 import com.example.budgetbuddy.model.ExpensesCreateRequestResponse
 import com.example.budgetbuddy.repository.ExpensesRepository
 import com.example.budgetbuddy.utils.TransactionMemoryCache
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 
 
 class TransactionCreateViewModel : ViewModel() {
@@ -19,25 +20,35 @@ class TransactionCreateViewModel : ViewModel() {
     val transactionResult: StateFlow<Result<ExpensesCreateRequestResponse>?> = _transactionResult
 
     fun createTransaction(transaction: TransactionRequest, token: String) {
-        viewModelScope.launch {
-            val result = repository.addTransaction(transaction, token)
-
-            result.fold(
-                onSuccess = { response ->
-                    _transactionResult.value = Result.success(response)
-
-                    // Si se creó correctamente, limpiamos el cache por si coincide
-                    if (TransactionMemoryCache.getTransaction() == transaction) {
-                        TransactionMemoryCache.clear()
-                    }
-                },
-                onFailure = { error ->
-                    _transactionResult.value = Result.failure(error)
+        viewModelScope.launch(Dispatchers.Main) {
+            try {
+                // Ejecutamos el dispatcher IO
+                val resultDeferred = async(Dispatchers.IO) {
+                    repository.addTransaction(transaction, token)
                 }
-            )
+
+                // Esperamos el resultado
+                val result = resultDeferred.await()
+
+                // Ya en Main: actualizamos el estado según el resultado
+                result.fold(
+                    onSuccess = { response ->
+                        _transactionResult.value = Result.success(response)
+
+                        if (TransactionMemoryCache.getTransaction() == transaction) {
+                            TransactionMemoryCache.clear()
+                        }
+                    },
+                    onFailure = { error ->
+                        _transactionResult.value = Result.failure(error)
+                    }
+                )
+            } catch (e: Exception) {
+                _transactionResult.value = Result.failure(e)
+            }
         }
     }
-
+            
     fun saveTransactionOffline(transaction: TransactionRequest, categoryName: String): Boolean {
         return TransactionMemoryCache.saveTransaction(transaction, categoryName)
     }
