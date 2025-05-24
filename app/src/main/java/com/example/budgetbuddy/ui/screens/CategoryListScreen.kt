@@ -14,6 +14,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
@@ -32,6 +33,9 @@ import com.example.budgetbuddy.utils.DateTimeUtils
 import java.util.Calendar
 import androidx.compose.ui.res.painterResource
 import com.example.budgetbuddy.model.Category // Assuming this model or similar from CategoryViewModel
+import com.example.budgetbuddy.utils.CategoryUsagePreferences
+import com.example.budgetbuddy.utils.NetworkStatus
+import com.example.budgetbuddy.utils.observeConnectivity
 
 @Composable
 fun CategoryListScreen(
@@ -43,6 +47,11 @@ fun CategoryListScreen(
     val userToken = authViewModel.getPersistedToken()
 
     val lastTs by transactionViewModel.lastUpdated
+    val context = LocalContext.current
+    val networkStatus by remember(context) { observeConnectivity(context) }
+        .collectAsState(initial = NetworkStatus.Unavailable)
+
+    val hasInternet = networkStatus is NetworkStatus.Available
 
     LaunchedEffect(userToken) {
         userToken?.let {
@@ -53,13 +62,24 @@ fun CategoryListScreen(
             val endDate = formatttDate(now)
             categoryViewModel.loadCategories()
             transactionViewModel.fetchTransactions(it, startDate, endDate)
+
         }
     }
 
     val totalExpense by transactionViewModel.totalExpense
     val totalBalance by transactionViewModel.totalBalance
     val totalIncome by transactionViewModel.totalIncome
-    val categories by categoryViewModel.categories.collectAsState()
+    val categoriesFromDb by categoryViewModel.categories.collectAsState()
+    val usageMap = remember { CategoryUsagePreferences.getCategoryUsageMap(context, userToken ?: "") }
+    val sortedCategories = categoriesFromDb.sortedByDescending { usageMap[it.id] ?: 0 }
+
+// Decide qué lista usar
+    val categoriesToDisplay = if (hasInternet) {
+        sortedCategories
+    } else {
+        categoriesFromDb
+    }
+
 
     Box(
         modifier = Modifier
@@ -174,8 +194,8 @@ fun CategoryListScreen(
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    items(categories) { category ->
-                        val categoryIdToUse = if (category.id != 0) category.id else 1
+                    items(categoriesToDisplay) { category ->
+                    val categoryIdToUse = if (category.id != 0) category.id else 1
                         Column(
                             horizontalAlignment = Alignment.CenterHorizontally,
                             modifier = Modifier

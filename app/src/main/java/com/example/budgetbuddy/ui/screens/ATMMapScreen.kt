@@ -24,6 +24,10 @@ import com.example.budgetbuddy.ui.components.BottomNavTab
 import com.example.budgetbuddy.utils.NetworkStatus
 import com.example.budgetbuddy.utils.observeConnectivity
 import com.example.budgetbuddy.viewmodel.AuthViewModel
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.clickable
+import androidx.compose.material3.Divider
 
 @SuppressLint("MissingPermission")
 @Composable
@@ -43,13 +47,7 @@ fun ATMMapScreen(navController: NavController, authViewModel: AuthViewModel, vie
 
     // Se ejecuta al abrir la pantalla, obtiene la ubicación y los ATMs cercanos
     LaunchedEffect(Unit) {
-        if (hasInternet) {
-            // Si hay internet, obtenemos la ubicación y los ATMs
-            viewModel.updateUserLocationAndAtms(context)
-        } else {
-            // Si no hay conexión, actualizamos el estado para reflejar la falta de conectividad
-
-        }
+        viewModel.updateUserLocationAndAtms(context)
     }
     LaunchedEffect(hasInternet) {
         if (hasInternet) {
@@ -71,15 +69,40 @@ fun ATMMapScreen(navController: NavController, authViewModel: AuthViewModel, vie
     Box(modifier = Modifier.fillMaxSize()) {
 
         if (!hasInternet) {
-            // Mostrar mensaje si no hay conexión
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "Connection error, please try again later",
-                    style = MaterialTheme.typography.bodyLarge
-                )
+            if (atms.isEmpty()) {
+                // Si no hay datos locales, mostrar mensaje
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "No hay conexión y no se encontraron ATMs guardados localmente.",
+                        style = MaterialTheme.typography.bodyLarge,
+                        modifier = Modifier.padding(16.dp)
+                    )
+                }
+            } else {
+                // Mostrar lista de ATMs locales
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize().padding(16.dp)
+                ) {
+                    items(atms) { atm ->
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 4.dp)
+                                .clickable { selectedATM = atm },
+                            elevation = CardDefaults.cardElevation(4.dp)
+                        ) {
+                            Column(modifier = Modifier.padding(16.dp)) {
+                                Text(text = atm.nombre, style = MaterialTheme.typography.titleMedium)
+                                Text(text = atm.direccion, style = MaterialTheme.typography.bodyMedium)
+
+                            }
+                        }
+                        Divider()
+                    }
+                }
             }
         } else {
             // Mostrar el mapa normalmente
