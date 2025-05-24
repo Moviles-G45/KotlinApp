@@ -8,20 +8,26 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.example.budgetbuddy.navigation.Screen
 import com.example.budgetbuddy.network.ApiClient
 import com.example.budgetbuddy.repository.AuthRepository
 import com.example.budgetbuddy.services.AuthService
 import com.example.budgetbuddy.viewmodel.AuthViewModel
 import kotlinx.coroutines.launch
+import com.example.budgetbuddy.utils.NetworkStatus
+import com.example.budgetbuddy.utils.isConnected
+import com.example.budgetbuddy.utils.observeConnectivity
 
 @Composable
 fun ForgotPasswordScreen(navController: NavController) {
@@ -37,6 +43,11 @@ fun ForgotPasswordScreen(navController: NavController) {
 
     val topColor = Color(0xFF2F6DB5) // Azul oscuro
     val bottomColor = Color(0xFFBFDDF5) // Azul claro
+    val networkStatus by remember(context) { observeConnectivity(context) }
+        .collectAsState(initial = NetworkStatus.Unavailable)
+
+    val hasInternet = networkStatus is NetworkStatus.Available
+
 
     Box(modifier = Modifier.fillMaxSize()) {
         // Sección superior con fondo azul
@@ -111,6 +122,7 @@ fun ForgotPasswordScreen(navController: NavController) {
                     }
                 },
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2F6DB5)),
+                enabled = hasInternet, // ⛔ desactiva si no hay internet
                 shape = RoundedCornerShape(20.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
@@ -128,10 +140,43 @@ fun ForgotPasswordScreen(navController: NavController) {
                     text = "Sign Up",
                     fontSize = 14.sp,
                     color = Color(0xFF2F6DB5),
-                    modifier = Modifier.clickable { navController.navigate("sign_up") }
+                    modifier = Modifier.clickable (
+                        enabled = hasInternet,
+                        onClick = { navController.navigate(Screen.SignUp.route) }
+                    )
+                        .alpha(if (hasInternet) 1f else 0.4f)
                 )
             }
+            Spacer(modifier = Modifier.height(30.dp))
+
+            Text(
+                text = "Forgot Password?",
+                fontSize = 14.sp,
+                color = if (hasInternet) Color.Blue else Color.Gray,
+                modifier = Modifier
+                    .clickable(
+                        enabled = hasInternet,
+                        onClick = { navController.navigate(Screen.ForgotPassword.route) }
+                    )
+                    .padding(0.dp)
+                    .alpha(if (hasInternet) 1f else 0.4f)
+            )
+            Spacer(modifier = Modifier.height(30.dp))
+
+            if (!hasInternet) {
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "No internet connection. Please check your network.",
+                    color = Color.Red,
+                    fontSize = 14.sp,
+                    textAlign = TextAlign.Center
+                )
+            }
+
         }
+
+
+
     }
 
     if (showSnackbar) {
