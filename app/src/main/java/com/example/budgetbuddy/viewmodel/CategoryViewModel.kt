@@ -27,7 +27,7 @@ class CategoryViewModel(application: Application) : AndroidViewModel(application
 
     // Cargar categorías
     fun loadCategories() {
-        // Primero: tareas en IO
+        // Primero IO
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 val networkCategories = repository.getCategories()
@@ -38,7 +38,6 @@ class CategoryViewModel(application: Application) : AndroidViewModel(application
                     categoryDao.insertAll(categoryEntities)
                 }
 
-                // Luego volvemos a Main para actualizar la UI
                 viewModelScope.launch(Dispatchers.Main) {
                     _categories.value = networkCategories
                     _categoryCount.value = existingCategories.size

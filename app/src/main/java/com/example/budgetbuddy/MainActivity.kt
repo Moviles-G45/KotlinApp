@@ -29,6 +29,7 @@ import java.util.concurrent.TimeUnit
 
 import androidx.activity.compose.setContent
 import androidx.lifecycle.ViewModelProvider
+import com.example.budgetbuddy.viewmodel.ATMViewModel
 
 import com.example.budgetbuddy.viewmodel.CategoryViewModel
 
@@ -53,7 +54,8 @@ class MainActivity : ComponentActivity() {
         checkAndRequestPermissions() // ✅ Ahora incluye permisos de notificación
         scheduleWeeklyNotification() // ✅ Programamos la notificación cada viernes a las 2:46 PM
         scheduleMonthlyReport()
-
+        val atmViewModel = ViewModelProvider(this)[ATMViewModel::class.java]
+        atmViewModel.updateUserLocationAndAtms(applicationContext)
         // Inicializamos el observer para detectar la conectividad
         val authService = ApiClient.createService(AuthService::class.java)
         val authViewModel = AuthViewModel(

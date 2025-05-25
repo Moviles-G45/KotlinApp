@@ -16,6 +16,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 data class ATMUiState(
     val userLocation: LatLng? = null,
@@ -31,44 +32,45 @@ class ATMViewModel : ViewModel() {
 
     /** Obtiene la ubicación del usuario */
     fun updateUserLocationAndAtms(context: Context) {
-        viewModelScope.launch(Dispatchers.Main) {
+        viewModelScope.launch(Dispatchers.IO) {
             try {
-                // Obtener ubicación del usuario
-                val locationDeferred = async(Dispatchers.IO) {
-                    val locationHelper = LocationHelper(context)
-                    locationHelper.getCurrentLocation()
-                }
-
-                val location: Location? = locationDeferred.await()
+                val locationHelper = LocationHelper(context)
+                val location = locationHelper.getCurrentLocation()
 
                 location?.let { userLocation ->
                     val userLatLng = LatLng(userLocation.latitude, userLocation.longitude)
+                    val remoteATMs = atmRepository.getNearbyATMs(userLatLng.latitude, userLatLng.longitude)
 
-                    val atms = async(Dispatchers.IO) {
-                        val db = ATMDatabase.getInstance(context)
-                        val atmDao = db.atmDao()
+                    // Guardar localmente
+                    val db = ATMDatabase.getInstance(context)
+                    val atmDao = db.atmDao()
+                    atmDao.clearAll()
+                    atmDao.insertAll(remoteATMs.map { it.toEntity() })
 
-                        // Intentar primero obtener ATMs remoto
-                        try {
-                            val remoteATMs = atmRepository.getNearbyATMs(userLatLng.latitude, userLatLng.longitude)
-                            atmDao.insertAll(remoteATMs.map { it.toEntity() })
-                            remoteATMs
-                        } catch (e: Exception) {
-                            e.printStackTrace()
-                            // Si falla la red, obtener ATMs de Room
-                            val localATMs = atmDao.getAll()
-                            localATMs.map { it.toModel() }
-                        }
-                    }.await()
-
-                    _uiState.value = ATMUiState(userLocation = userLatLng, atms = atms)
+                    // Actualizar en Main
+                    withContext(Dispatchers.Main) {
+                        _uiState.value = ATMUiState(userLocation = userLatLng, atms = remoteATMs)
+                    }
                 } ?: run {
-                    _uiState.value = ATMUiState()
+                    withContext(Dispatchers.Main) {
+                        _uiState.value = ATMUiState()
+                    }
                 }
+
             } catch (e: Exception) {
                 e.printStackTrace()
+                // Si falla la red o algo más, cargar local
+                val db = ATMDatabase.getInstance(context)
+                val atmDao = db.atmDao()
+                val localATMs = atmDao.getAll().map { it.toModel() }
+
+                withContext(Dispatchers.Main) {
+                    // Aquí puedes decidir qué hacer con la ubicación, por ejemplo null si no tienes
+                    _uiState.value = ATMUiState(userLocation = null, atms = localATMs)
+                }
             }
         }
     }
+
 
 }

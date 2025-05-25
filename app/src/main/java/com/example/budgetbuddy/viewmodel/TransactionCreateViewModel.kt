@@ -29,8 +29,6 @@ class TransactionCreateViewModel : ViewModel() {
 
                 // Esperamos el resultado
                 val result = resultDeferred.await()
-
-                // Ya en Main: actualizamos el estado según el resultado
                 result.fold(
                     onSuccess = { response ->
                         _transactionResult.value = Result.success(response)
